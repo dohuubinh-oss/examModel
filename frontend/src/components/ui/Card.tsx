@@ -16,7 +16,7 @@ export const CardHeader = React.forwardRef<HTMLDivElement, React.HTMLAttributes<
   ({ className, ...props }, ref) => (
     <div
       ref={ref}
-      className={cn("p-5 border-b border-slate-100", className)}
+      className={cn("p-5", className)}
       {...props}
     />
   )
