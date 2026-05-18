@@ -11,9 +11,11 @@ We have successfully completed all visual redesign and bug remediation tasks wit
 - **Solution**: Refactored [Latex.tsx](file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/ui/Latex.tsx) so `checkAndLoadAutoRender` utilizes a safety check (`setInterval`) that waits for `window.katex` to be fully defined before initiating script injection. This guarantees perfect concurrent loads on pages rendering multiple cards.
 
 ### 2. Removed All Horizontal Border Lines from QuestionCard
-- In accordance with the "No-Line" design philosophy, we removed the bottom border from the header row in [QuestionCard.tsx](file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/questions/QuestionCard.tsx).
-- Further, we removed the top border `border-t border-slate-100` from `CardContent` (which sits directly under the question stem). Now, the card uses a clean, borderless gray background transition `bg-slate-50/50` for options/solutions, creating a premium modern aesthetic.
-- Optimized vertical spacing to flow seamlessly: changed the header bottom padding from `p-5` to `p-5 pb-2`, and changed the question content container padding from `p-5 pb-4` to `px-5 pb-4`.
+- **Problem**: Despite setting border utilities on `<CardHeader>` in `QuestionCard.tsx`, a thin gray border remained under the header because `CardHeader` in [Card.tsx](file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/ui/Card.tsx) had a hardcoded `border-b border-slate-100` utility.
+- **Solution**: 
+  - Edited [Card.tsx](file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/ui/Card.tsx) directly, removing the default `border-b border-slate-100` style from `CardHeader` to align with the "No-Line Architecture" design system principles.
+  - Removed the top border `border-t border-slate-100` from `CardContent` (which sits directly under the question stem). Now, the card uses a clean, borderless gray background transition `bg-slate-50/50` for options/solutions, creating a premium modern aesthetic.
+  - Optimized vertical spacing to flow seamlessly: changed the header bottom padding from `p-5` to `p-5 pb-2`, and changed the question content container padding from `p-5 pb-4` to `px-5 pb-4`.
 
 ### 3. Redesigned QuestionCard Header Spacing
 - Tesselated the header row so only metadata badges/tags are displayed on the top left and action items are on the top right.
@@ -24,7 +26,7 @@ We have successfully completed all visual redesign and bug remediation tasks wit
 ## 🧪 Verification & Output
 
 1. **TypeScript Verification**: Passed successfully with **zero errors**.
-2. **Production Build**: Next.js production bundler compiled flawlessly in **1048ms**.
+2. **Production Build**: Next.js production bundler compiled flawlessly in **1105ms**.
 
 ---
 
@@ -33,3 +35,4 @@ We have successfully completed all visual redesign and bug remediation tasks wit
 Review all changes made during this iteration here:
 - render_diffs(file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/ui/Latex.tsx)
 - render_diffs(file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/questions/QuestionCard.tsx)
+- render_diffs(file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/ui/Card.tsx)
