@@ -129,8 +129,8 @@ export default function QuestionBankPage() {
             <h3 className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Bộ lọc chi tiết</h3>
             
             <Collapsible title="Khối lớp" icon={<School className="h-4 w-4" />} open>
-              <div className="flex flex-col gap-2 pt-2">
-                {['6', '7', '8', '9'].map(g => (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-2">
+                {['5', '6', '7', '8', '9', '10'].map(g => (
                   <label key={g} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox
                       checkboxSize="sm"
@@ -144,8 +144,8 @@ export default function QuestionBankPage() {
             </Collapsible>
 
             <Collapsible title="Môn học" icon={<BookOpen className="h-4 w-4" />} open>
-              <div className="flex flex-col gap-2 pt-2">
-                {['Đại số', 'Hình học', 'Giải tích'].map(s => (
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-2">
+                {['Đại số', 'Hình học', 'Giải tích', 'Số học'].map(s => (
                   <label key={s} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox
                       checkboxSize="sm"
@@ -159,7 +159,7 @@ export default function QuestionBankPage() {
             </Collapsible>
 
             <Collapsible title="Mức độ" icon={<Signal className="h-4 w-4" />} open>
-              <div className="flex flex-col gap-2 pt-2">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-2">
                 {['Nhận biết', 'Thông hiểu', 'Vận dụng', 'Vận dụng cao'].map(l => (
                   <label key={l} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox

@@ -105,6 +105,38 @@ export const mockQuestions: Question[] = [
     content: "Giải bất phương trình: $x^2 - 5x + 6 > 0$",
     lastUpdated: "01/12/2023",
     author: "Admin"
+  },
+  {
+    id: "q4",
+    number: 4,
+    topic: "Lớp 5 - Số học",
+    level: "Nhận biết",
+    type: "multiple_choice",
+    content: "Tính giá trị của biểu thức: $A = 1.25 \\times 4 + 2.5 \\times 2$.",
+    options: [
+      { id: "opt4_a", label: "A", content: "$A = 10$", isCorrect: true },
+      { id: "opt4_b", label: "B", content: "$A = 15$", isCorrect: false },
+      { id: "opt4_c", label: "C", content: "$A = 5$", isCorrect: false },
+      { id: "opt4_d", label: "D", content: "$A = 12.5$", isCorrect: false },
+    ],
+    lastUpdated: "15/02/2024",
+    author: "GV. Minh"
+  },
+  {
+    id: "q5",
+    number: 5,
+    topic: "Lớp 10 - Giải tích",
+    level: "Thông hiểu",
+    type: "multiple_choice",
+    content: "Tìm tập nghiệm $S$ của bất phương trình bậc hai: $x^2 - 4x + 3 \\le 0$.",
+    options: [
+      { id: "opt5_a", label: "A", content: "$S = [1, 3]$", isCorrect: true },
+      { id: "opt5_b", label: "B", content: "$S = (1, 3)$", isCorrect: false },
+      { id: "opt5_c", label: "C", content: "$S = (-\\infty, 1] \\cup [3, +\\infty)$", isCorrect: false },
+      { id: "opt5_d", label: "D", content: "$S = \\varnothing$", isCorrect: false },
+    ],
+    lastUpdated: "20/03/2024",
+    author: "Admin"
   }
 ];
 
