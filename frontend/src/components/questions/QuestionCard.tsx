@@ -127,7 +127,31 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                     ))}
                   </div>
                 ) : (
-                  <div className="italic text-xs text-slate-500">Dạng bài: Tự luận</div>
+                  <>
+                    {!isTeacher ? (
+                      <div className="border border-dashed border-slate-300 bg-white p-3 rounded-lg text-center max-w-md">
+                        <span className="text-xs text-slate-500 font-medium font-display">
+                          Học sinh trình bày lời giải chi tiết vào giấy thi.
+                        </span>
+                      </div>
+                    ) : sub.solution ? (
+                      <div className="border border-dashed border-amber-300 bg-amber-50/10 p-3.5 rounded-lg space-y-1.5 max-w-xl">
+                        <span className="text-[10px] font-bold text-amber-700 uppercase tracking-wider block">
+                          Hướng dẫn chấm / Lời giải mẫu:
+                        </span>
+                        <Latex 
+                          className="text-xs text-slate-700 leading-relaxed font-display" 
+                          text={sub.solution}
+                        />
+                      </div>
+                    ) : (
+                      <div className="border border-dashed border-slate-300 bg-white p-3 rounded-lg text-center max-w-md">
+                        <span className="text-xs text-slate-500 font-medium font-display">
+                          Học sinh trình bày lời giải chi tiết vào giấy thi.
+                        </span>
+                      </div>
+                    )}
+                  </>
                 )}
               </div>
             ))}

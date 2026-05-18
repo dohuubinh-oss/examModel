@@ -90,7 +90,8 @@ export const mockQuestions: Question[] = [
         id: "q2_sub2",
         number: 2,
         content: "Xác định tâm và bán kính mặt cầu ngoại tiếp hình chóp S.ABCD.",
-        type: "essay"
+        type: "essay",
+        solution: "Gọi $M$ là trung điểm của $AB$. Do $AD = CD = a, AB = 2a$ nên $AMCD$ là hình vuông cạnh $a$ và $BC = a\\sqrt{2}$. Gọi $O$ là trung điểm của $SC$. Ta có $OS = OC = OA = OB = OD$, do đó $O$ chính là tâm mặt cầu ngoại tiếp hình chóp $S.ABCD$. Bán kính mặt cầu là $R = SC/2 = \\frac{\\sqrt{SA^2 + 2a^2}}{2}$."
       }
     ],
     lastUpdated: "05/11/2023",
