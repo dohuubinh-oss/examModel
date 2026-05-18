@@ -4,6 +4,7 @@ import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
 import { Question } from '@/lib/mock-data';
+import { Latex } from '@/components/ui/Latex';
 
 export interface QuestionCardProps {
   question: Question;
@@ -24,19 +25,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 
   return (
     <Card className="group overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl transition-all">
-      {/* Card Header */}
-      <CardHeader className="flex justify-between items-start flex-row gap-4 p-5 border-b border-slate-100 bg-white">
-        <div className="flex gap-3 items-start">
-          <Badge variant="primary" className="shrink-0 mt-0.5">Câu {question.number}</Badge>
-          <div>
-            <span className="text-xs font-semibold text-primary uppercase tracking-wider block mb-1">
-              {question.topic} • {question.level}
-            </span>
-            <p 
-              className="mt-1 text-slate-800 leading-relaxed text-base font-normal font-display" 
-              dangerouslySetInnerHTML={{ __html: question.content }}
-            />
-          </div>
+      {/* Card Header (Meta Info Row only) */}
+      <CardHeader className="flex justify-between items-center flex-row gap-4 p-5 border-b border-slate-100 bg-white">
+        <div className="flex gap-3 items-center">
+          <Badge variant="primary" className="shrink-0">Câu {question.number}</Badge>
+          <span className="text-xs font-bold text-primary uppercase tracking-wider block">
+            {question.topic} • {question.level}
+          </span>
         </div>
         
         {isTeacher && onRegenerate && (
@@ -52,8 +47,15 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         )}
       </CardHeader>
 
-      {/* Card Content */}
-      <CardContent className="bg-slate-50/50 p-5">
+      {/* Card Question Stem (Full Width Question Content) */}
+      <div className="p-5 pb-4 bg-white">
+        <div className="text-slate-800 leading-relaxed text-base font-normal font-display">
+          <Latex text={question.content} />
+        </div>
+      </div>
+
+      {/* Card Content (Choices or Solutions) */}
+      <CardContent className="bg-slate-50/50 p-5 border-t border-slate-100">
         {question.type === 'multiple_choice' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {question.options?.map((opt) => {
@@ -83,9 +85,9 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                   >
                     {opt.label}
                   </Badge>
-                  <span 
+                  <Latex 
                     className="text-slate-700 font-display text-sm" 
-                    dangerouslySetInnerHTML={{ __html: opt.content }} 
+                    text={opt.content}
                   />
                   {showAsCorrect && <CheckCircle2 className="text-primary ml-auto shrink-0" size={18} />}
                 </div>
@@ -93,15 +95,14 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
             })}
           </div>
         ) : (
-          // Essay layout showing solution/rubric directly in teacher mode
           isTeacher && question.solution ? (
             <div className="border border-dashed border-amber-300 bg-amber-50/10 p-5 rounded-xl space-y-2">
               <span className="text-xs font-bold text-amber-700 uppercase tracking-wider block">
                 Hướng dẫn chấm / Lời giải mẫu:
               </span>
-              <div 
+              <Latex 
                 className="text-sm text-slate-700 leading-relaxed font-display" 
-                dangerouslySetInnerHTML={{ __html: question.solution }}
+                text={question.solution}
               />
             </div>
           ) : (
