@@ -25,7 +25,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   onCheckChange,
   onRegenerate,
 }) => {
-  const isTeacher = mode === 'teacher';
+  const isTeacher = mode !== 'student';
 
   return (
     <Card className="group overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl transition-all">
