@@ -31,11 +31,19 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
     <Card className="group overflow-hidden bg-slate-50 rounded-xl border border-slate-200/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
       <CardHeader className="flex justify-between items-center flex-row gap-4 p-5 pb-2 bg-slate-50 border-b-0">
         <div className="flex gap-3 items-center">
-          <Checkbox
-            checkboxSize="sm"
-            checked={isChecked}
-            onChange={(e) => onCheckChange?.(e.target.checked)}
-          />
+          <div 
+            onClick={(e) => {
+              e.stopPropagation();
+              onCheckChange?.(!isChecked);
+            }} 
+            className="flex items-center justify-center cursor-pointer"
+          >
+            <Checkbox
+              checkboxSize="sm"
+              checked={isChecked}
+              readOnly
+            />
+          </div>
           <Badge variant="primary" size="sm">{question.topic}</Badge>
           <Badge variant={question.level === 'Nhận biết' ? 'success' : question.level === 'Thông hiểu' ? 'warning' : 'danger'} size="sm">
             {question.level}
