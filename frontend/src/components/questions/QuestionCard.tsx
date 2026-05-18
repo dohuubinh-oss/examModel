@@ -55,7 +55,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       </div>
 
       {/* Card Content (Choices or Solutions) */}
-      <CardContent className="bg-slate-50/50 p-5 border-t border-slate-100">
+      <CardContent className="bg-slate-50/50 p-5">
         {question.type === 'multiple_choice' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {question.options?.map((opt) => {
