@@ -1,5 +1,5 @@
 import React from 'react';
-import { CheckCircle2, History, Edit3, Trash2, ArrowRight } from 'lucide-react';
+import { CheckCircle2, History, Edit3, Trash2, ArrowRight, RefreshCw } from 'lucide-react';
 import { Card, CardHeader, CardContent } from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -30,39 +30,69 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   return (
     <Card className="group overflow-hidden bg-slate-50 rounded-xl border border-slate-200/60 shadow-sm hover:shadow-md hover:border-primary/30 transition-all">
       <CardHeader className="flex justify-between items-center flex-row gap-4 p-5 pb-2 bg-slate-50 border-b-0">
-        <div className="flex gap-3 items-center">
-          <div 
-            onClick={(e) => {
-              e.stopPropagation();
-              onCheckChange?.(!isChecked);
-            }} 
-            className="flex items-center justify-center cursor-pointer"
-          >
-            <Checkbox
-              checkboxSize="sm"
-              checked={isChecked}
-              readOnly
-            />
-          </div>
-          <Badge variant="primary" size="sm">{question.topic}</Badge>
-          <Badge variant={question.level === 'Nhận biết' ? 'success' : question.level === 'Thông hiểu' ? 'warning' : 'danger'} size="sm">
-            {question.level}
-          </Badge>
-          <span className="text-[10px] text-slate-400 font-medium">ID: #Q-{question.id}</span>
-        </div>
+        {onRegenerate ? (
+          /* Exam Builder Page Card Style: 'Câu X' Badge + 'Đổi câu hỏi' Action */
+          <>
+            <div className="flex gap-3 items-center">
+              <Badge variant="primary" size="sm" className="font-bold bg-primary text-white">
+                Câu {question.number}
+              </Badge>
+              <span className="text-[11px] text-slate-500 font-semibold">{question.topic}</span>
+              <Badge variant={question.level === 'Nhận biết' ? 'success' : question.level === 'Thông hiểu' ? 'warning' : 'danger'} size="sm">
+                {question.level}
+              </Badge>
+              <span className="text-[10px] text-slate-400 font-medium">ID: #Q-{question.id}</span>
+            </div>
+            <button 
+              onClick={(e) => {
+                e.stopPropagation();
+                onRegenerate(question.id);
+              }}
+              className="flex items-center gap-1.5 px-3 py-1 text-xs font-bold text-primary bg-primary/5 hover:bg-primary/10 rounded-lg border border-primary/20 hover:border-primary/30 transition-all cursor-pointer shrink-0"
+              title="Đổi câu hỏi khác ngẫu nhiên bằng AI"
+            >
+              <RefreshCw size={12} className="animate-spin-slow" />
+              <span>Đổi câu hỏi khác</span>
+            </button>
+          </>
+        ) : (
+          /* Question Bank Page Card Style: Checkbox + 3 Actions (Edit, Delete, History) */
+          <>
+            <div className="flex gap-3 items-center">
+              <div 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onCheckChange?.(!isChecked);
+                }} 
+                className="flex items-center justify-center cursor-pointer"
+              >
+                <Checkbox
+                  checkboxSize="sm"
+                  checked={isChecked}
+                  readOnly
+                />
+              </div>
+              <span className="text-[11px] text-slate-500 font-semibold">{question.topic}</span>
+              <Badge variant={question.level === 'Nhận biết' ? 'success' : question.level === 'Thông hiểu' ? 'warning' : 'danger'} size="sm">
+                {question.level}
+              </Badge>
+              <span className="text-[10px] text-slate-400 font-medium">ID: #Q-{question.id}</span>
+            </div>
 
-        {isTeacher && (
-          <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Xem lịch sử">
-              <History size={16} />
-            </button>
-            <button className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Chỉnh sửa">
-              <Edit3 size={16} />
-            </button>
-            <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all" title="Xóa">
-              <Trash2 size={16} />
-            </button>
-          </div>
+            {isTeacher && (
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Xem lịch sử">
+                  <History size={16} />
+                </button>
+                <button className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Chỉnh sửa">
+                  <Edit3 size={16} />
+                </button>
+                <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all" title="Xóa">
+                  <Trash2 size={16} />
+                </button>
+              </div>
+            )}
+          </>
         )}
       </CardHeader>
 
