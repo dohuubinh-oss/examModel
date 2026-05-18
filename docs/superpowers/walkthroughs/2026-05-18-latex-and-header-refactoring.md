@@ -10,8 +10,9 @@ We have successfully completed all visual redesign and bug remediation tasks wit
 - **Problem**: When multiple `<Latex>` components mounted simultaneously, the latter components attempted to load `contrib/auto-render.min.js` while the core `window.katex` script was still in-flight, raising `TypeError: Cannot read properties of undefined (reading 'ParseError')`.
 - **Solution**: Refactored [Latex.tsx](file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/ui/Latex.tsx) so `checkAndLoadAutoRender` utilizes a safety check (`setInterval`) that waits for `window.katex` to be fully defined before initiating script injection. This guarantees perfect concurrent loads on pages rendering multiple cards.
 
-### 2. Removed QuestionCard Header Bottom Border
-- In accordance with the "No-Line" design philosophy, we removed `border-b border-slate-100` from the card header in [QuestionCard.tsx](file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/questions/QuestionCard.tsx).
+### 2. Removed All Horizontal Border Lines from QuestionCard
+- In accordance with the "No-Line" design philosophy, we removed the bottom border from the header row in [QuestionCard.tsx](file:///Users/modeptrai/Desktop/ToanThucChien/frontend/src/components/questions/QuestionCard.tsx).
+- Further, we removed the top border `border-t border-slate-100` from `CardContent` (which sits directly under the question stem). Now, the card uses a clean, borderless gray background transition `bg-slate-50/50` for options/solutions, creating a premium modern aesthetic.
 - Optimized vertical spacing to flow seamlessly: changed the header bottom padding from `p-5` to `p-5 pb-2`, and changed the question content container padding from `p-5 pb-4` to `px-5 pb-4`.
 
 ### 3. Redesigned QuestionCard Header Spacing
@@ -23,7 +24,7 @@ We have successfully completed all visual redesign and bug remediation tasks wit
 ## 🧪 Verification & Output
 
 1. **TypeScript Verification**: Passed successfully with **zero errors**.
-2. **Production Build**: Next.js production bundler compiled flawlessly in **1018ms**.
+2. **Production Build**: Next.js production bundler compiled flawlessly in **1048ms**.
 
 ---
 
