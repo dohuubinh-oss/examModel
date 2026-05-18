@@ -127,7 +127,7 @@ export default function QuestionBankPage() {
                       checked={selectedGrades.includes(g)}
                       onChange={() => toggleGrade(g)}
                     />
-                    Lớp {g}
+                    {g === '10' ? 'Luyện thi 10' : `Lớp ${g}`}
                   </label>
                 ))}
               </div>
