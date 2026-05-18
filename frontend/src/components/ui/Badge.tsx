@@ -2,24 +2,32 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'success' | 'primary' | 'outline';
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'outline';
+  size?: 'sm' | 'md';
 }
 
 export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
-  ({ className, variant = 'default', ...props }, ref) => {
-    const baseStyles = "inline-flex items-center justify-center text-xs font-medium transition-colors";
+  ({ className, variant = 'default', size = 'sm', ...props }, ref) => {
+    const baseStyles = "inline-flex items-center justify-center font-medium transition-colors";
     
     const variants = {
-      default: "bg-slate-100 text-slate-500 px-2 py-0.5 rounded",
-      success: "bg-green-100 text-green-700 px-3 py-1 rounded-full",
-      primary: "bg-primary text-white px-2.5 py-1 rounded-lg font-bold text-sm h-8",
-      outline: "border border-slate-300 text-slate-700 px-2 py-0.5 rounded-full",
+      default: "bg-slate-100 text-slate-500",
+      primary: "bg-primary/10 text-primary border-transparent",
+      success: "bg-green-500/10 text-green-600 border-transparent",
+      warning: "bg-amber-500/10 text-amber-600 border-transparent",
+      danger: "bg-red-500/10 text-red-600 border-transparent",
+      outline: "border border-slate-300 text-slate-700 bg-white",
+    };
+
+    const sizes = {
+      sm: "text-[10px] font-bold uppercase px-2 py-0.5 rounded",
+      md: "text-xs font-semibold px-2.5 py-1 rounded-lg h-7",
     };
 
     return (
       <div
         ref={ref}
-        className={cn(baseStyles, variants[variant], className)}
+        className={cn(baseStyles, variants[variant], sizes[size], className)}
         {...props}
       />
     );
