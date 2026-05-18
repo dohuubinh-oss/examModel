@@ -1,10 +1,10 @@
 # Stage 1: Build
-FROM golang:1.21-alpine AS builder
+FROM golang:1.26-alpine AS builder
 
 WORKDIR /app
 
 # Install dependencies
-COPY go.mod go.sum ./
+COPY go.mod ./
 RUN go mod download
 
 # Copy source code
@@ -14,7 +14,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -o main .
 
 # Stage 2: Runtime
-FROM alpine:latest
+FROM alpine:3.20
 
 WORKDIR /root/
 

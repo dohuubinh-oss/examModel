@@ -1,0 +1,46 @@
+<h2>Lựa chọn Loại câu hỏi</h2>
+<p class="subtitle">Ngân hàng câu hỏi cần hỗ trợ những định dạng nào chủ yếu?</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">Demo: Question Card (Editorial Scholarship)</div>
+    <div class="mockup-body">
+      <div style="background:#FFFFFF; padding:24px; border-radius:12px; box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);">
+        <div style="font-size:12px; color:#64748B; font-weight:600; text-transform:uppercase; margin-bottom:8px;">Câu 1 • Toán học • Dễ</div>
+        <div style="font-family:'Lexend', sans-serif; font-size:18px; color:#1E293B; margin-bottom:16px;">
+          Giá trị của biểu thức $x^2 + 2x + 1$ tại $x = 1$ là bao nhiêu?
+        </div>
+        <div style="display:flex; flex-direction:column; gap:8px;">
+          <div style="padding:12px; background:#F1F5F9; border-radius:8px; font-size:14px;">A. 1</div>
+          <div style="padding:12px; background:#F1F5F9; border-radius:8px; font-size:14px;">B. 2</div>
+          <div style="padding:12px; background:#F1F5F9; border-radius:8px; font-size:14px; font-weight:600; color:#334155; border: 1px solid #334155;">C. 4</div>
+          <div style="padding:12px; background:#F1F5F9; border-radius:8px; font-size:14px;">D. 0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="options" data-choice-group="qtype">
+    <div class="option" data-choice="mcq" onclick="toggleSelect(this)">
+      <div class="letter">A</div>
+      <div class="content">
+        <h3>Trắc nghiệm (MCQ)</h3>
+        <p>Tối ưu cho việc chấm điểm tự động nhanh chóng.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="mixed" onclick="toggleSelect(this)">
+      <div class="letter">B</div>
+      <div class="content">
+        <h3>Hỗn hợp (MCQ + Tự luận)</h3>
+        <p>Bao gồm cả câu hỏi mở cần giáo viên chấm điểm.</p>
+      </div>
+    </div>
+    <div class="option" data-choice="advanced" onclick="toggleSelect(this)">
+      <div class="letter">C</div>
+      <div class="content">
+        <h3>Nâng cao</h3>
+        <p>Điền vào chỗ trống, nối cột, đúng/sai, công thức phức tạp.</p>
+      </div>
+    </div>
+  </div>
+</div>

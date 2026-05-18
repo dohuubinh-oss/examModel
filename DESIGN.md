@@ -1,24 +1,24 @@
 ---
-name: Modern Academic (Editorial Scholarship)
-description: A high-fidelity design system for professional examination management. Focuses on clarity, authority, and focused learning through strong typography and generous whitespace.
+name: Modern Academic (Editorial Scholarship v2)
+description: A high-fidelity design system for professional examination management. Focuses on clarity, authority, and focused learning through strong typography, vibrant accents, and structured layouts.
 colors:
   surface: "#FFFFFF"
-  on-surface: "#1E293B"
-  on-surface-variant: "#64748B"
-  primary: "#334155"
-  on-primary: "#F8FAFC"
-  primary-container: "#F1F5F9"
-  on-primary-container: "#475569"
-  secondary: "#0F172A"
-  on-secondary: "#FFFFFF"
-  accent: "#475569"
+  on-surface: "#111827" # Slate-900
+  on-surface-variant: "#64748B" # Slate-500
+  primary: "#2463EB" # Vibrant Blue from code.html
+  on-primary: "#FFFFFF"
+  primary-container: "#EFF6FF" # Blue-50
+  on-primary-container: "#1E40AF" # Blue-800
+  secondary: "#F6F6F8" # Background-light
+  on-secondary: "#334155" # Slate-700
+  accent: "#F59E0B" # Amber-500 (Used for Essay sections)
   on-accent: "#FFFFFF"
-  error: "#991B1B"
+  error: "#EF4444" # Red-500
   on-error: "#FEF2F2"
-  background: "#F8FAFC"
-  on-background: "#1E293B"
-  outline: "#E2E8F0"
-  outline-variant: "#F1F5F9"
+  background: "#F6F6F8"
+  on-background: "#111621" # Background-dark
+  outline: "#E2E8F0" # Slate-200
+  outline-variant: "#F1F5F9" # Slate-100
 typography:
   display-lg:
     fontFamily: Lexend
@@ -52,15 +52,19 @@ typography:
     fontWeight: "600"
     lineHeight: 16px
     letterSpacing: 0.05em
+  latex:
+    fontFamily: "Times New Roman"
+    fontStyle: italic
 rounded:
   sm: 4px
-  DEFAULT: 8px
-  md: 12px
-  lg: 16px
-  xl: 24px
+  DEFAULT: 4px
+  md: 8px
+  lg: 12px
+  xl: 16px
+  "2xl": 24px
   full: 9999px
 spacing:
-  unit: 8px
+  unit: 4px
   container-padding: 32px
   card-gap: 24px
   section-margin: 48px
@@ -68,53 +72,63 @@ components:
   card-standard:
     backgroundColor: "{colors.surface}"
     textColor: "{colors.on-surface}"
-    rounded: "{rounded.lg}"
-    padding: "{spacing.container-padding}"
-    border: "none"
-    boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)"
+    rounded: "{rounded.2xl}"
+    padding: 20px
+    border: "1px solid {colors.outline}"
+    boxShadow: "0 1px 2px 0 rgb(0 0 0 / 0.05)"
   button-primary:
     backgroundColor: "{colors.primary}"
     textColor: "{colors.on-primary}"
     typography: "{typography.label-sm}"
-    rounded: "{rounded.md}"
-    height: 44px
+    rounded: "{rounded.lg}"
+    height: 40px
     padding: 0 20px
   input-field:
-    backgroundColor: "{colors.primary-container}"
+    backgroundColor: "{colors.surface}"
     textColor: "{colors.on-surface}"
     typography: "{typography.body-md}"
-    rounded: "{rounded.md}"
-    padding: 12px 16px
+    rounded: "{rounded.lg}"
+    padding: 10px 14px
     border: "1px solid {colors.outline}"
+  section-header-mcq:
+    borderLeft: "4px solid {colors.primary}"
+    backgroundColor: "{colors.surface}"
+    padding: "8px 16px"
+    textTransform: "uppercase"
+  section-header-essay:
+    borderLeft: "4px solid {colors.accent}"
+    backgroundColor: "{colors.surface}"
+    padding: "8px 16px"
+    textTransform: "uppercase"
 ---
 
 # Brand & Style
-The **Modern Academic** design system is built for the "ExamModel" project. It follows the **Editorial Scholarship** philosophy: priority is given to reading and focus. The aesthetic is clean, authoritative, and sophisticated, mirroring the environment of a premium educational institution or a professional broadsheet.
+The **Modern Academic** design system is refined based on high-performance educational UI standards. It combines the focus of an editorial layout with the interactive clarity of a professional assessment tool.
 
 ## Core Principles
-1. **Typography First**: Hierarchy is established through weight and size of Lexend (headings) and Inter (body), not through color or boxes.
-2. **Infinite Whitespace**: Margins and gaps are intentionally large to create "breathing room" for complex exam data.
-3. **No-Line Architecture**: Borders and lines are replaced by subtle depth (shadows) and background shifts to define sections.
-4. **Slate Authority**: A palette of Slate and Ink blues provides a serious, professional tone that is easier on the eyes than pure black.
+1. **Structural Hierarchy**: Use `Lexend` for all structural elements (headings, identifiers) to maintain a modern, readable feel. Use `Inter` for interface labels and `Times New Roman` (Italic) for mathematical symbols to adhere to standard academic conventions.
+2. **Defined Boundaries**: While maintaining generous whitespace, use subtle borders (`slate-200`) and soft shadows to clearly define content areas, especially for complex questions.
+3. **Intentional Accents**: 
+   - **Primary Blue (#2463EB)**: Action items, identifiers, and MCQ sections.
+   - **Amber (#F59E0B)**: Specifically used to denote Essay or high-attention sections.
+4. **Soft Layering**: Depth is created through a clean light background (`#F6F6F8`) and pure white surfaces for interaction.
 
 # Colors
-The color strategy uses a high-contrast Light Mode only approach.
-- **Background**: We use a very light slate (#F8FAFC) instead of pure white for the main canvas to reduce glare.
-- **Cards**: Pure white cards sit on the background, creating a natural elevation.
-- **Accents**: Used sparingly for interactive elements to keep the focus on the academic content.
+The palette uses high-contrast Slate for text and vibrant accents for guidance.
+- **Background**: Soft gray-white to reduce eye strain during long sessions.
+- **Primary**: Authority blue for trust and clarity.
+- **Status Colors**: Green for verification, Red for errors, Amber for differentiation.
 
 # Typography
-We use two Google Fonts:
-- **Lexend**: A font specifically designed to improve reading proficiency. Used for all headings and brand elements.
-- **Inter**: A highly legible sans-serif for UI labels and long-form body text.
+- **Lexend**: Display font for brand and headings.
+- **Inter**: System font for UI and body text.
+- **LaTeX (Times New Roman)**: Mathematical variable and formula font.
 
-# Elevation & Depth
-Depth is achieved through **Soft Layering**:
-- **Level 1 (Canvas)**: Background color.
-- **Level 2 (Content)**: Surface cards with soft shadows.
-- **Level 3 (Interactions)**: Primary buttons and active states with a slightly deeper shadow or high-contrast color.
+# Elevation
+- **Cards**: `rounded-2xl` with a thin border and small shadow.
+- **Focus States**: 2px ring with 20% opacity of the primary color.
 
 # Layout
-- **Grid**: 8px base unit.
-- **Margins**: 32px container padding is the standard minimum.
-- **Density**: Low density is preferred. Information should be chunked into clean sections rather than crammed into a single view.
+- **Max Width**: 1440px for large desktop views.
+- **Grid**: 12-column system (typically 8 cols for content, 4 for sidebar/configuration).
+- **Density**: Moderate. Maintain clarity by not crowding components.

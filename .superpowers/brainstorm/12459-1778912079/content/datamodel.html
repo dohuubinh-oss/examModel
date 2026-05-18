@@ -1,0 +1,45 @@
+<h2>Thiết kế Phần 2: Cấu trúc Dữ liệu</h2>
+<p class="subtitle">Chi tiết Schema và Metadata linh hoạt</p>
+
+<div class="split">
+  <div class="mockup">
+    <div class="mockup-header">PostgreSQL Schema (questions table)</div>
+    <div class="mockup-body">
+      <pre style="font-size:12px; background:#1E293B; color:#F8FAFC; padding:15px; border-radius:4px; overflow-x:auto;">
+CREATE TABLE questions (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    content TEXT NOT NULL,
+    type VARCHAR(20) NOT NULL, -- mcq, essay
+    options JSONB, -- For MCQ choices
+    answer TEXT, -- Correct ID or Sample Text
+    metadata JSONB DEFAULT '{}', -- Flexible tags
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+-- GIN Index for fast searching in metadata
+CREATE INDEX idx_questions_metadata ON questions USING GIN (metadata);
+      </pre>
+    </div>
+  </div>
+
+  <div class="mockup">
+    <div class="mockup-header">Sample JSONB Metadata</div>
+    <div class="mockup-body">
+      <pre style="font-size:12px; background:#F1F5F9; padding:15px; border-radius:4px;">
+{
+  "subject": "Mathematics",
+  "grade": 12,
+  "difficulty": "Advanced",
+  "chapter": "Calculus",
+  "topic": "Integrals",
+  "author": "Admin",
+  "source": "Final Exam 2024"
+}
+      </pre>
+      <p style="font-size:12px; color:#64748B; margin-top:10px;">
+        <em>Bạn có thể thêm bất kỳ cặp Key-Value nào vào đây mà không cần đổi Schema.</em>
+      </p>
+    </div>
+  </div>
+</div>

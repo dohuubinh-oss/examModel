@@ -1,0 +1,48 @@
+<h2>Thiết kế Phần 1: Kiến trúc & Luồng dữ liệu</h2>
+<p class="subtitle">Mô hình phân tầng cho hệ thống Ngân hàng câu hỏi</p>
+
+<div class="mockup">
+  <div class="mockup-header">Architecture Overview</div>
+  <div class="mockup-body">
+    <div style="display:flex; flex-direction:column; gap:20px; align-items:center; padding:20px;">
+      <!-- Client -->
+      <div style="padding:15px; border:2px solid #334155; border-radius:8px; width:250px; text-align:center;">
+        <div class="label">Frontend</div>
+        <div style="font-weight:bold;">Next.js App</div>
+        <div style="font-size:12px;">React + Tailwind + Framer Motion</div>
+      </div>
+      
+      <div style="height:30px; border-left:2px dashed #CBD5E1;"></div>
+      
+      <!-- API Gateway / Proxy -->
+      <div style="padding:10px; background:#F1F5F9; border-radius:4px; width:150px; text-align:center; font-size:12px;">
+        Nginx Proxy
+      </div>
+
+      <div style="height:30px; border-left:2px dashed #CBD5E1;"></div>
+
+      <!-- Backend -->
+      <div style="padding:15px; border:2px solid #334155; border-radius:8px; width:250px; text-align:center;">
+        <div class="label">Backend</div>
+        <div style="font-weight:bold;">Golang (Gin)</div>
+        <div style="font-size:12px;">Excel Parser + REST API</div>
+      </div>
+
+      <div style="height:30px; border-left:2px dashed #CBD5E1;"></div>
+
+      <!-- Data Layer -->
+      <div style="display:flex; gap:20px;">
+        <div style="padding:15px; background:#334155; color:white; border-radius:8px; width:180px; text-align:center;">
+          <div class="label" style="color:#94A3B8">Database</div>
+          <strong>PostgreSQL</strong>
+          <div style="font-size:10px;">(Questions + JSONB Metadata)</div>
+        </div>
+        <div style="padding:15px; background:#F1F5F9; border:1px solid #CBD5E1; border-radius:8px; width:180px; text-align:center;">
+          <div class="label">Cache</div>
+          <strong>Redis</strong>
+          <div style="font-size:10px;">(Session + Filter Cache)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

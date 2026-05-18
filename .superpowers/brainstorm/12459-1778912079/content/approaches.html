@@ -1,0 +1,40 @@
+<h2>So sánh Các Phương án Tiếp cận</h2>
+<p class="subtitle">Kiến trúc cho hệ thống quản lý thẻ và lọc động</p>
+
+<div class="cards">
+  <div class="card" data-choice="approach1" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <div class="label" style="color:#64748B">Option 1</div>
+      <h3>Relational Tagging</h3>
+      <p>Bảng riêng cho Tags & Categories. Quan hệ Many-to-Many chuẩn SQL.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Rất chặt chẽ</li><li>Dễ thống kê</li></ul></div>
+        <div class="cons"><ul><li>Khó mở rộng metadata mới</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="approach2" onclick="toggleSelect(this)" style="border: 2px solid #334155;">
+    <div class="card-body">
+      <div class="label" style="color:#334155; font-weight:bold;">Đề xuất</div>
+      <h3>JSONB Flexible Metadata</h3>
+      <p>Lưu thẻ trong cột JSONB của PostgreSQL. Tìm kiếm bằng GIN Index.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Linh hoạt tối đa</li><li>Dễ code, hiệu năng cao</li></ul></div>
+        <div class="cons"><ul><li>Cần kiểm soát chặt format nhập</li></ul></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" data-choice="approach3" onclick="toggleSelect(this)">
+    <div class="card-body">
+      <div class="label" style="color:#64748B">Option 3</div>
+      <h3>Search Engine Driven</h3>
+      <p>Sử dụng Typesense/Meilisearch để quản lý chỉ mục câu hỏi.</p>
+      <div class="pros-cons">
+        <div class="pros"><ul><li>Tìm kiếm cực mạnh</li><li>Lọc đa chiều mượt mà</li></ul></div>
+        <div class="cons"><ul><li>Phức tạp về hạ tầng (Sidecar)</li></ul></div>
+      </div>
+    </div>
+  </div>
+</div>

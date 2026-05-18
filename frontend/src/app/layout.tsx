@@ -12,11 +12,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen">
-        <main className="max-w-7xl mx-auto py-12 px-container">
-          {children}
-        </main>
+        {children}
       </body>
     </html>
   )

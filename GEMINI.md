@@ -1,4 +1,4 @@
-# Project: ExamModel
+# Project: ToanThucChien
 
 Hệ thống quản lý và tạo đề thi chuyên nghiệp, tích hợp Everything Claude Code (ECC) và Superpowers.
 
@@ -25,6 +25,12 @@ Xem chi tiết tại: [.agent/rules/superpowers.md](file:///Users/modeptrai/Desk
 - **NO CROSS-PROJECT MEMORY**: Bạn tuyệt đối không được tham chiếu, nhắc đến hoặc sử dụng bất kỳ ngữ cảnh, mã nguồn hoặc kiến thức nào từ các dự án cũ (như `ToanTHCS`, `mau2`, `mau3`).
 - **PROJECT ROOT BOUNDARY**: Phạm vi hoạt động của bạn bị giới hạn nghiêm ngặt trong thư mục `/Users/modeptrai/Desktop/examModel`.
 - **CLEAN SLATE**: Hãy coi đây là dự án duy nhất tồn tại. Không áp dụng các mẫu UI, quyết định kiến trúc hoặc logic nghiệp vụ từ các dự án trước đó trừ khi được quy định rõ ràng trong repo này.
+
+## 🎨 UI/UX STRICT COMPLIANCE (CRITICAL)
+
+- **FIDELITY FIRST**: Khi xây dựng Frontend từ các file giao diện có sẵn (HTML/CSS), bạn phải giữ nguyên thiết kế gốc. Tuyệt đối không tự ý thay đổi bố cục, màu sắc hoặc font chữ.
+- **MINIMUM CREATIVITY**: Đưa chế độ sáng tạo (Creativity/Temperature) xuống mức thấp nhất khi xử lý UI/UX. Chỉ thực hiện chuyển đổi kỹ thuật sang Next.js mà không thêm thắt thẩm mỹ cá nhân của AI.
+- **CONFLICT RESOLUTION**: Nếu có bất kỳ sự xung đột nào giữa file giao diện gốc và nguyên tắc trong `DESIGN.md`, bạn **BẮT BUỘC** phải hỏi ý kiến người dùng trước khi thực hiện bất kỳ thay đổi nào.
 
 ## Slash Commands (Workflows)
 
