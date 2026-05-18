@@ -26,7 +26,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
   return (
     <Card className="group overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl transition-all">
       {/* Card Header (Meta Info Row only) */}
-      <CardHeader className="flex justify-between items-center flex-row gap-4 p-5 border-b border-slate-100 bg-white">
+      <CardHeader className="flex justify-between items-center flex-row gap-4 p-5 pb-2 bg-white">
         <div className="flex gap-3 items-center">
           <Badge variant="primary" className="shrink-0">Câu {question.number}</Badge>
           <span className="text-xs font-bold text-primary uppercase tracking-wider block">
@@ -48,7 +48,7 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
       </CardHeader>
 
       {/* Card Question Stem (Full Width Question Content) */}
-      <div className="p-5 pb-4 bg-white">
+      <div className="px-5 pb-4 bg-white">
         <div className="text-slate-800 leading-relaxed text-base font-normal font-display">
           <Latex text={question.content} />
         </div>

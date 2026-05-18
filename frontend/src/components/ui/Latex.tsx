@@ -48,24 +48,30 @@ export const Latex: React.FC<LatexProps> = ({ text = '', className = '' }) => {
     }
 
     function checkAndLoadAutoRender() {
-      const autoId = 'katex-auto-render';
-      if (!document.getElementById(autoId)) {
-        const autoScript = document.createElement('script');
-        autoScript.id = autoId;
-        autoScript.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js';
-        autoScript.async = true;
-        autoScript.onload = () => {
-          setIsLoaded(true);
-        };
-        document.head.appendChild(autoScript);
-      } else {
-        const interval = setInterval(() => {
-          if (window.renderMathInElement) {
-            clearInterval(interval);
-            setIsLoaded(true);
+      const interval = setInterval(() => {
+        if (window.katex) {
+          clearInterval(interval);
+          
+          const autoId = 'katex-auto-render';
+          if (!document.getElementById(autoId)) {
+            const autoScript = document.createElement('script');
+            autoScript.id = autoId;
+            autoScript.src = 'https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/contrib/auto-render.min.js';
+            autoScript.async = true;
+            autoScript.onload = () => {
+              setIsLoaded(true);
+            };
+            document.head.appendChild(autoScript);
+          } else {
+            const autoInterval = setInterval(() => {
+              if (window.renderMathInElement) {
+                clearInterval(autoInterval);
+                setIsLoaded(true);
+              }
+            }, 50);
           }
-        }, 50);
-      }
+        }
+      }, 50);
     }
   }, []);
 
