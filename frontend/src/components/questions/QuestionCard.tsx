@@ -132,62 +132,69 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
               </div>
             ))}
           </div>
-        ) : question.type === 'multiple_choice' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            {question.options?.map((opt) => {
-              const isSelected = selectedOptionId === opt.id;
-              const showAsCorrect = isTeacher && opt.isCorrect;
-              const highlight = showAsCorrect || (!isTeacher && isSelected);
-
-              return (
-                <div
-                  key={opt.id}
-                  onClick={() => {
-                    if (!isTeacher && onOptionSelect) {
-                      onOptionSelect(question.id, opt.id);
-                    }
-                  }}
-                  className={`flex items-center gap-3 p-3 bg-white rounded-lg border transition-all ${
-                    highlight 
-                      ? 'border-2 border-primary bg-blue-50/10 shadow-sm' 
-                      : isTeacher 
-                        ? 'border-slate-200 cursor-default opacity-85'
-                        : 'border-slate-200 hover:border-primary/50 cursor-pointer'
-                  }`}
-                >
-                  <Badge 
-                    variant={highlight ? 'primary' : 'outline'} 
-                    className="rounded-full w-6 h-6 flex items-center justify-center p-0 shrink-0 font-bold"
-                  >
-                    {opt.label}
-                  </Badge>
-                  <Latex 
-                    className="text-slate-700 font-display text-sm" 
-                    text={opt.content}
-                  />
-                  {showAsCorrect && <CheckCircle2 className="text-primary ml-auto shrink-0" size={18} />}
-                </div>
-              );
-            })}
-          </div>
         ) : (
-          isTeacher && question.solution ? (
-            <div className="border border-dashed border-amber-300 bg-amber-50/10 p-5 rounded-xl space-y-2">
-              <span className="text-xs font-bold text-amber-700 uppercase tracking-wider block">
-                Hướng dẫn chấm / Lời giải mẫu:
-              </span>
-              <Latex 
-                className="text-sm text-slate-700 leading-relaxed font-display" 
-                text={question.solution}
-              />
-            </div>
-          ) : (
-            <div className="border border-dashed border-slate-300 bg-white p-5 rounded-xl text-center">
-              <span className="text-sm text-slate-500 font-medium font-display">
-                Học sinh trình bày lời giải chi tiết vào giấy thi.
-              </span>
-            </div>
-          )
+          <>
+            {question.type === 'multiple_choice' ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {question.options?.map((opt) => {
+                  const isSelected = selectedOptionId === opt.id;
+                  const showAsCorrect = isTeacher && opt.isCorrect;
+                  const highlight = showAsCorrect || (!isTeacher && isSelected);
+
+                  return (
+                    <div
+                      key={opt.id}
+                      onClick={() => {
+                        if (!isTeacher && onOptionSelect) {
+                          onOptionSelect(question.id, opt.id);
+                        }
+                      }}
+                      className={`flex items-center gap-3 p-3 bg-white rounded-lg border transition-all ${
+                        highlight 
+                          ? 'border-2 border-primary bg-blue-50/10 shadow-sm' 
+                          : isTeacher 
+                            ? 'border-slate-200 cursor-default opacity-85'
+                            : 'border-slate-200 hover:border-primary/50 cursor-pointer'
+                      }`}
+                    >
+                      <Badge 
+                        variant={highlight ? 'primary' : 'outline'} 
+                        className="rounded-full w-6 h-6 flex items-center justify-center p-0 shrink-0 font-bold"
+                      >
+                        {opt.label}
+                      </Badge>
+                      <Latex 
+                        className="text-slate-700 font-display text-sm" 
+                        text={opt.content}
+                      />
+                      {showAsCorrect && <CheckCircle2 className="text-primary ml-auto shrink-0" size={18} />}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              !isTeacher && (
+                <div className="border border-dashed border-slate-300 bg-white p-5 rounded-xl text-center">
+                  <span className="text-sm text-slate-500 font-medium font-display">
+                    Học sinh trình bày lời giải chi tiết vào giấy thi.
+                  </span>
+                </div>
+              )
+            )}
+
+            {/* Display Solution for Teachers if present (both MC and Essay!) */}
+            {isTeacher && question.solution && (
+              <div className="border border-dashed border-amber-300 bg-amber-50/10 p-5 rounded-xl space-y-2 mt-4">
+                <span className="text-xs font-bold text-amber-700 uppercase tracking-wider block">
+                  Hướng dẫn chấm / Lời giải mẫu:
+                </span>
+                <Latex 
+                  className="text-sm text-slate-700 leading-relaxed font-display" 
+                  text={question.solution}
+                />
+              </div>
+            )}
+          </>
         )}
       </CardContent>
     </Card>

@@ -103,6 +103,7 @@ export const mockQuestions: Question[] = [
     level: "Nhận biết",
     type: "essay",
     content: "Giải bất phương trình: $x^2 - 5x + 6 > 0$",
+    solution: "Ta biến đổi bất phương trình: $x^2 - 5x + 6 > 0 \\Leftrightarrow (x-2)(x-3) > 0$. Xét dấu của tam thức bậc hai, ta thu được tập nghiệm: $S = (-\\infty, 2) \\cup (3, +\\infty)$.",
     lastUpdated: "01/12/2023",
     author: "Admin"
   },
