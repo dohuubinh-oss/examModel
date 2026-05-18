@@ -4,7 +4,8 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Upload, Plus, School, BookOpen, Signal, FolderOpen, 
-  Printer, Trash2, Sparkles, Settings 
+  Printer, Trash2, Sparkles, Settings, LayoutDashboard, 
+  Database, FileText, Users 
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -102,6 +103,28 @@ export default function QuestionBankPage() {
       <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Filters */}
         <aside className="w-72 border-r border-slate-100 overflow-y-auto hidden md:block bg-white p-4 space-y-6">
+          {/* Page Navigation Menu */}
+          <div className="space-y-1">
+            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="#">
+              <LayoutDashboard className="h-4.5 w-4.5 text-slate-400" />
+              <span className="text-xs font-semibold">Bảng điều khiển</span>
+            </a>
+            <a className="flex items-center gap-3 px-3 py-2 bg-primary/5 text-primary rounded-lg transition-all border-r-4 border-primary cursor-pointer" href="#">
+              <Database className="h-4.5 w-4.5 text-primary" />
+              <span className="text-xs font-bold">Ngân hàng câu hỏi</span>
+            </a>
+            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="#">
+              <FileText className="h-4.5 w-4.5 text-slate-400" />
+              <span className="text-xs font-semibold">Ngân hàng đề thi</span>
+            </a>
+            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="#">
+              <Users className="h-4.5 w-4.5 text-slate-400" />
+              <span className="text-xs font-semibold">Học sinh</span>
+            </a>
+          </div>
+
+          <hr className="border-slate-100" />
+
           <div className="space-y-4">
             <h3 className="px-3 text-[10px] font-bold uppercase tracking-wider text-slate-400">Bộ lọc chi tiết</h3>
             
