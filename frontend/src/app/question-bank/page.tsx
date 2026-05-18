@@ -1,7 +1,11 @@
 'use client';
 
 import React from 'react';
-import { Upload, Plus, School, BookOpen, Signal, FolderOpen, Printer, Trash2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { 
+  Upload, Plus, School, BookOpen, Signal, FolderOpen, 
+  Printer, Trash2, Sparkles, Settings 
+} from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Collapsible } from '@/components/ui/Collapsible';
@@ -10,6 +14,7 @@ import { QuestionCard } from '@/components/questions/QuestionCard';
 import { mockQuestions } from '@/lib/mock-data';
 
 export default function QuestionBankPage() {
+  const router = useRouter();
   const [selectedGrades, setSelectedGrades] = React.useState<string[]>([]);
   const [selectedSubjects, setSelectedSubjects] = React.useState<string[]>([]);
   const [selectedLevels, setSelectedLevels] = React.useState<string[]>([]);
@@ -60,8 +65,41 @@ export default function QuestionBankPage() {
   const isAllSelected = filteredQuestions.length > 0 && selectedQs.length === filteredQuestions.length;
 
   return (
-    <div className="flex flex-1 overflow-hidden min-h-screen text-slate-900 bg-white font-display">
-      <div className="flex w-full">
+    <div className="flex flex-col min-h-screen text-slate-900 bg-white font-display">
+      {/* Header - Styled matching Create Exam page */}
+      <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 px-4 md:px-8 py-3">
+        <div className="w-full flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.back()}
+              className="bg-primary/10 p-2 rounded-lg text-primary hover:bg-primary/20 transition-colors cursor-pointer flex items-center justify-center"
+              title="Quay lại trang trước"
+            >
+              <Sparkles size={24} />
+            </button>
+            <div>
+              <h1 className="text-lg font-bold leading-tight">Quản lý ngân hàng câu hỏi</h1>
+              <p className="text-xs text-slate-500">Toán học THPT • Tổng số: {mockQuestions.length} câu hỏi</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <Button variant="outline-slate">
+              <Upload size={20} />
+              Nhập từ JSON
+            </Button>
+            <Button variant="default" className="shadow-md shadow-primary/20">
+              <Plus size={20} />
+              Tạo đề thi
+            </Button>
+            <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
+              <Settings size={24} />
+            </button>
+          </div>
+        </div>
+      </header>
+
+      {/* Workspace container below Header */}
+      <div className="flex flex-1 overflow-hidden">
         {/* Sidebar Filters */}
         <aside className="w-72 border-r border-slate-100 overflow-y-auto hidden md:block bg-white p-4 space-y-6">
           <div className="space-y-4">
@@ -117,28 +155,6 @@ export default function QuestionBankPage() {
         {/* Main Work Area */}
         <main className="flex-1 overflow-y-auto bg-white p-6 pb-32">
           <div className="flex flex-col gap-6 max-w-6xl mx-auto">
-            {/* Header / Breadcrumb */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <div>
-                <div className="flex items-center gap-2 text-xs text-slate-500 mb-1">
-                  <span>Admin</span>
-                  <span className="text-slate-400">/</span>
-                  <span className="text-primary font-medium">Ngân hàng câu hỏi</span>
-                </div>
-                <h3 className="text-2xl font-bold text-slate-900">Danh sách câu hỏi</h3>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Button variant="outline-slate">
-                  <Upload size={16} />
-                  Nhập từ JSON
-                </Button>
-                <Button variant="default" className="shadow-md shadow-primary/20">
-                  <Plus size={16} />
-                  Tạo đề thi
-                </Button>
-              </div>
-            </div>
-
             {/* Select All Checkbox Control */}
             {filteredQuestions.length > 0 && (
               <div 
