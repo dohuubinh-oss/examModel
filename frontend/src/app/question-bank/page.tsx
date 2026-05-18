@@ -69,7 +69,7 @@ export default function QuestionBankPage() {
     <div className="flex flex-col min-h-screen text-slate-900 bg-white font-display">
       {/* Header - Styled matching Create Exam page */}
       <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 px-4 md:px-8 py-3">
-        <div className="w-full flex items-center justify-between">
+        <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={() => router.back()}
@@ -100,7 +100,7 @@ export default function QuestionBankPage() {
       </header>
 
       {/* Workspace container below Header */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex-1 w-full max-w-[1440px] mx-auto flex overflow-hidden">
         {/* Sidebar Filters */}
         <aside className="w-72 border-r border-slate-100 overflow-y-auto hidden md:block bg-white p-4 space-y-6">
           {/* Page Navigation Menu */}
@@ -177,7 +177,7 @@ export default function QuestionBankPage() {
 
         {/* Main Work Area */}
         <main className="flex-1 overflow-y-auto bg-white p-6 pb-32">
-          <div className="flex flex-col gap-6 max-w-6xl mx-auto">
+          <div className="flex flex-col gap-6 w-full">
             {/* Select All Checkbox Control */}
             {filteredQuestions.length > 0 && (
               <div 
