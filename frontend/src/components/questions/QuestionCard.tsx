@@ -27,6 +27,23 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
 }) => {
   const isTeacher = mode !== 'student';
 
+  const getLevelBadgeStyle = (level: string) => {
+    const normalized = level.toLowerCase();
+    if (normalized.includes('nhận biết')) {
+      return 'bg-emerald-500/10 text-emerald-600 border-emerald-200/40';
+    }
+    if (normalized.includes('thông hiểu')) {
+      return 'bg-amber-500/10 text-amber-600 border-amber-200/40';
+    }
+    if (normalized.includes('vận dụng cao')) {
+      return 'bg-red-500/10 text-red-600 border-red-200/40';
+    }
+    if (normalized.includes('vận dụng')) {
+      return 'bg-orange-500/10 text-orange-600 border-orange-200/40';
+    }
+    return 'bg-slate-100 text-slate-600 border-slate-200/40';
+  };
+
   return (
     <Card className="group overflow-hidden bg-white border border-slate-200 shadow-sm rounded-2xl transition-all">
       {/* Card Header (Meta Info Row only) */}
@@ -34,14 +51,17 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         {onRegenerate ? (
           /* Exam Builder Page Card Style: 'Câu X' Badge + 'Đổi câu hỏi' Action */
           <>
-            <div className="flex gap-3 items-center">
-              <Badge variant="primary" className="shrink-0 font-bold bg-primary text-white">
+            <div className="flex gap-2 items-center flex-wrap">
+              <Badge variant="primary" className="shrink-0 font-bold bg-primary text-white text-[10px] px-2 py-0.5 rounded uppercase">
                 Câu {question.number}
               </Badge>
-              <span className="text-xs font-bold text-primary uppercase tracking-wider block">
-                {question.topic} • {question.level}
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium">ID: #Q-{question.id}</span>
+              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 text-[10px] font-bold uppercase py-0.5 px-2 rounded tracking-normal shrink-0">
+                {question.topic}
+              </Badge>
+              <Badge variant="outline" className={`${getLevelBadgeStyle(question.level)} text-[10px] font-bold uppercase py-0.5 px-2 rounded tracking-normal shrink-0`}>
+                {question.level}
+              </Badge>
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">ID: #Q-{question.id}</span>
             </div>
             <button 
               onClick={(e) => {
@@ -58,13 +78,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
         ) : (
           /* Question Bank Page Card Style: Checkbox + 3 Actions (Edit, Delete, History) */
           <>
-            <div className="flex gap-3 items-center">
+            <div className="flex gap-2 items-center flex-wrap">
               <div 
                 onClick={(e) => {
                   e.stopPropagation();
                   onCheckChange?.(!isChecked);
                 }} 
-                className="flex items-center justify-center cursor-pointer"
+                className="flex items-center justify-center cursor-pointer shrink-0"
               >
                 <Checkbox
                   checkboxSize="sm"
@@ -72,10 +92,13 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                   readOnly
                 />
               </div>
-              <span className="text-xs font-bold text-primary uppercase tracking-wider block">
-                {question.topic} • {question.level}
-              </span>
-              <span className="text-[10px] text-slate-400 font-medium">ID: #Q-{question.id}</span>
+              <Badge variant="outline" className="bg-primary/5 text-primary border-primary/10 text-[10px] font-bold uppercase py-0.5 px-2 rounded tracking-normal shrink-0">
+                {question.topic}
+              </Badge>
+              <Badge variant="outline" className={`${getLevelBadgeStyle(question.level)} text-[10px] font-bold uppercase py-0.5 px-2 rounded tracking-normal shrink-0`}>
+                {question.level}
+              </Badge>
+              <span className="text-[10px] text-slate-400 font-medium shrink-0">ID: #Q-{question.id}</span>
             </div>
 
             {isTeacher && (
@@ -114,17 +137,34 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                 </div>
                 {sub.type === 'multiple_choice' ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    {sub.options?.map((opt) => (
-                      <div
-                        key={opt.id}
-                        className={`text-sm p-2.5 border rounded-lg bg-white flex justify-between items-center ${
-                          opt.isCorrect ? 'border-primary text-primary font-bold shadow-sm' : 'border-slate-200'
-                        }`}
-                      >
-                        <Latex text={`${opt.label}. ${opt.content}`} />
-                        {opt.isCorrect && <CheckCircle2 className="text-primary shrink-0" size={16} />}
-                      </div>
-                    ))}
+                    {sub.options?.map((opt) => {
+                      const showAsCorrect = isTeacher && opt.isCorrect;
+                      return (
+                        <div
+                          key={opt.id}
+                          className={`flex items-center gap-3 p-2.5 rounded-xl border transition-all ${
+                            showAsCorrect
+                              ? 'border-primary/20 bg-primary/5 shadow-sm'
+                              : 'border-slate-200 bg-white'
+                          }`}
+                        >
+                          <span className={`rounded-full w-5 h-5 flex items-center justify-center p-0 shrink-0 font-bold text-[9px] transition-colors ${
+                            showAsCorrect
+                              ? 'bg-primary text-white'
+                              : 'bg-slate-100 text-slate-600'
+                          }`}>
+                            {opt.label}
+                          </span>
+                          <Latex 
+                            className={`font-display text-sm transition-colors ${
+                              showAsCorrect ? 'text-primary font-semibold' : 'text-slate-700'
+                            }`} 
+                            text={opt.content}
+                          />
+                          {showAsCorrect && <CheckCircle2 className="text-primary ml-auto shrink-0" size={16} />}
+                        </div>
+                      );
+                    })}
                   </div>
                 ) : (
                   <>
@@ -173,25 +213,28 @@ export const QuestionCard: React.FC<QuestionCardProps> = ({
                           onOptionSelect(question.id, opt.id);
                         }
                       }}
-                      className={`flex items-center gap-3 p-3 bg-white rounded-lg border transition-all ${
+                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
                         highlight 
-                          ? 'border-2 border-primary bg-blue-50/10 shadow-sm' 
+                          ? 'border-primary/20 bg-primary/5 shadow-sm' 
                           : isTeacher 
-                            ? 'border-slate-200 cursor-default opacity-85'
-                            : 'border-slate-200 hover:border-primary/50 cursor-pointer'
+                            ? 'border-slate-200 cursor-default opacity-85 bg-white'
+                            : 'border-slate-200 hover:border-primary/50 cursor-pointer bg-white'
                       }`}
                     >
-                      <Badge 
-                        variant={highlight ? 'primary' : 'outline'} 
-                        className="rounded-full w-6 h-6 flex items-center justify-center p-0 shrink-0 font-bold"
-                      >
+                      <span className={`rounded-full w-6 h-6 flex items-center justify-center p-0 shrink-0 font-bold text-[10px] transition-colors ${
+                        highlight 
+                          ? 'bg-primary text-white' 
+                          : 'bg-slate-100 text-slate-600'
+                      }`}>
                         {opt.label}
-                      </Badge>
+                      </span>
                       <Latex 
-                        className="text-slate-700 font-display text-sm" 
+                        className={`font-display text-sm transition-colors ${
+                          highlight ? 'text-primary font-semibold' : 'text-slate-700'
+                        }`} 
                         text={opt.content}
                       />
-                      {showAsCorrect && <CheckCircle2 className="text-primary ml-auto shrink-0" size={18} />}
+                      {showAsCorrect && <CheckCircle2 className="text-primary ml-auto shrink-0 animate-fade-in" size={18} />}
                     </div>
                   );
                 })}
