@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/modeptrai/exam-model-backend/models"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -32,6 +33,13 @@ func main() {
 	}
 	DB = db
 	fmt.Println("Successfully connected to PostgreSQL")
+
+	// Auto-migrate schema
+	err = db.AutoMigrate(&models.Question{}, &models.User{}, &models.Exam{}, &models.ExamQuestion{}, &models.TestResult{})
+	if err != nil {
+		log.Fatalf("Failed to run database auto-migration: %v", err)
+	}
+	fmt.Println("Database auto-migration completed successfully")
 
 	// 2. Initialize Cache (Redis)
 	redisURL := os.Getenv("REDIS_URL")

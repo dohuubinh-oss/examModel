@@ -9,10 +9,15 @@ module.exports = {
     extend: {
       colors: {
         primary: {
-          DEFAULT: '#2463EB',
+          DEFAULT: '#2563EB',
           foreground: '#FFFFFF',
         },
-        background: '#F6F6F8',
+        'background-light': '#f6f6f8',
+        'background-dark': '#111621',
+        success: '#10b981',
+        error: '#ef4444',
+        warning: '#f59e0b',
+        background: '#f6f6f8',
         surface: '#FFFFFF',
         accent: {
           DEFAULT: '#F59E0B',
