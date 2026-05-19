@@ -110,9 +110,6 @@ export default function TakeExamPage() {
 
   // Success overlays
   const [showSubmitSuccess, setShowSubmitSuccess] = React.useState<boolean>(false);
-
-  // MathLive Essay Mode toggle: 'text' or 'mathlive'
-  const [essayMode, setEssayMode] = React.useState<'text' | 'mathlive'>('text');
   
   // MathLive Hybrid Insertion Modal state
   const [isHybridModalOpen, setIsHybridModalOpen] = React.useState<boolean>(false);
@@ -162,14 +159,36 @@ export default function TakeExamPage() {
     }));
   };
 
-  // Add math symbol to essay textarea
+  // Add math symbol to essay textarea at current cursor position
   const handleInsertSymbol = (symbol: string) => {
     if (activeQuestion.type !== 'essay') return;
-    const currentAnswer = answers[activeQuestion.id] || '';
+    const textarea = document.getElementById(`essay-textarea-${activeQuestion.id}`) as HTMLTextAreaElement;
+    
+    if (!textarea) {
+      // Fallback: append to the end of the text
+      const currentAnswer = answers[activeQuestion.id] || '';
+      setAnswers(prev => ({
+        ...prev,
+        [activeQuestion.id]: currentAnswer + symbol
+      }));
+      return;
+    }
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const currentText = answers[activeQuestion.id] || '';
+    const newText = currentText.substring(0, start) + symbol + currentText.substring(end);
+
     setAnswers(prev => ({
       ...prev,
-      [activeQuestion.id]: currentAnswer + symbol
+      [activeQuestion.id]: newText
     }));
+
+    // Re-focus and update cursor selection range in next frame
+    setTimeout(() => {
+      textarea.focus();
+      textarea.setSelectionRange(start + symbol.length, start + symbol.length);
+    }, 0);
   };
 
   const handleNext = () => {
@@ -425,87 +444,53 @@ export default function TakeExamPage() {
 
                 {/* Khung Editor */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
-                  {/* Mode Tabs */}
-                  <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-1 gap-1">
-                    <button
-                      onClick={() => setEssayMode('text')}
-                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                        essayMode === 'text'
-                          ? 'bg-white dark:bg-slate-900 text-primary shadow-sm border border-slate-100 dark:border-slate-800 font-semibold'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-semibold'
-                      }`}
-                    >
-                      Văn bản tự do
-                    </button>
-                    <button
-                      onClick={() => setEssayMode('mathlive')}
-                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                        essayMode === 'mathlive'
-                          ? 'bg-white dark:bg-slate-900 text-primary shadow-sm border border-slate-100 dark:border-slate-800 font-semibold'
-                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-semibold'
-                      }`}
-                    >
-                      Soạn công thức (MathLive)
-                    </button>
-                  </div>
-
                   {/* Math symbols toolbar */}
-                  <div className="border-b border-slate-200 dark:border-slate-800 p-2 flex flex-wrap gap-1.5 bg-slate-50 dark:bg-slate-900/60 justify-between items-center">
+                  <div className="border-b border-slate-200 dark:border-slate-800 p-2 flex flex-wrap gap-2 bg-slate-50 dark:bg-slate-900/60 justify-between items-center">
                     <div className="flex flex-wrap gap-1.5">
-                      {['√', 'π', 'Δ', '⊥', '∠', '²', '÷'].map((sym) => (
+                      {[
+                        { label: '√x', value: ' $\\sqrt{x}$ ' },
+                        { label: 'a/b', value: ' $\\frac{a}{b}$ ' },
+                        { label: 'x²', value: ' $x^2$ ' },
+                        { label: 'π', value: ' $\\pi$ ' },
+                        { label: 'Δ', value: ' $\\Delta$ ' },
+                        { label: '±', value: ' $\\pm$ ' },
+                        { label: '∠', value: ' $\\angle$ ' },
+                        { label: '≥', value: ' $\\ge$ ' },
+                        { label: '≤', value: ' $\\le$ ' },
+                        { label: '≠', value: ' $\\neq$ ' }
+                      ].map((sym) => (
                         <Button 
-                          key={sym} 
+                          key={sym.label} 
                           variant="math" 
                           size="math" 
-                          onClick={() => handleInsertSymbol(sym)}
+                          onClick={() => handleInsertSymbol(sym.value)}
                         >
-                          {sym}
+                          {sym.label}
                         </Button>
                       ))}
                     </div>
-                    {essayMode === 'text' && (
-                      <Button 
-                        variant="math" 
-                        size="math" 
-                        onClick={() => {
-                          setHybridFormula('');
-                          setIsHybridModalOpen(true);
-                        }}
-                        className="px-3 bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 rounded-lg flex items-center gap-1 font-semibold text-xs py-1 cursor-pointer"
-                      >
-                        <Sparkles className="h-3 w-3 text-primary animate-pulse" />
-                        Chèn Công thức (Mathfield)
-                      </Button>
-                    )}
+                    <Button 
+                      variant="math" 
+                      size="math" 
+                      onClick={() => {
+                        setHybridFormula('');
+                        setIsHybridModalOpen(true);
+                      }}
+                      className="px-3 bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 rounded-lg flex items-center gap-1 font-semibold text-xs py-1.5 cursor-pointer"
+                    >
+                      <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
+                      Nâng cao
+                    </Button>
                   </div>
 
                   {/* Editor Body */}
-                  {essayMode === 'text' ? (
-                    <textarea
-                      value={answers[activeQuestion.id] || ''}
-                      onChange={handleEssayChange}
-                      placeholder="Nhập lời giải chi tiết tại đây (Sử dụng LaTeX hoặc các công cụ hỗ trợ trên)..."
-                      className="p-6 resize-none border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-slate-200 placeholder-slate-400 leading-relaxed text-base h-64 outline-none"
-                    />
-                  ) : (
-                    <div className="p-5 bg-transparent min-h-[256px] flex flex-col justify-start">
-                      <p className="text-xs text-slate-400 font-semibold mb-2">Soạn thảo công thức chuyên sâu (LaTeX):</p>
-                      <MathfieldInput
-                        value={answers[activeQuestion.id] || ''}
-                        onChange={(val) => {
-                          setAnswers(prev => ({
-                            ...prev,
-                            [activeQuestion.id]: val
-                          }));
-                        }}
-                        placeholder="Gõ công thức toán học chuyên sâu tại đây (ví dụ: \int_{a}^{b} f(x) dx, \frac{-b \pm \sqrt{\Delta}}{2a})...."
-                        className="border-slate-200 dark:border-slate-800"
-                      />
-                      <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800 text-xs text-slate-500 font-semibold leading-relaxed">
-                        Bạn đang sử dụng trình soạn thảo công thức MathLive. Công thức của bạn sẽ được lưu trực tiếp dưới dạng LaTeX chất lượng cao để hệ thống hiển thị chính xác.
-                      </div>
-                    </div>
-                  )}
+                  <textarea
+                    id={`essay-textarea-${activeQuestion.id}`}
+                    value={answers[activeQuestion.id] || ''}
+                    onChange={handleEssayChange}
+                    placeholder="Nhập lời giải chi tiết tại đây (Sử dụng các nút công cụ hoặc bấm 'Nâng cao' để mở bàn phím công thức)..."
+                    className="p-6 resize-none border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-slate-200 placeholder-slate-400 leading-relaxed text-base h-64 outline-none"
+                  />
 
                   {/* Bottom Upload Zone */}
                   <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-200 dark:border-slate-800">
@@ -799,12 +784,7 @@ export default function TakeExamPage() {
               <Button
                 onClick={() => {
                   if (hybridFormula) {
-                    const currentAnswer = answers[activeQuestion.id] || '';
-                    // Wrapped in KaTeX inline tags ($...$)
-                    setAnswers(prev => ({
-                      ...prev,
-                      [activeQuestion.id]: currentAnswer + ` $${hybridFormula}$ `
-                    }));
+                    handleInsertSymbol(` $${hybridFormula}$ `);
                     setHybridFormula('');
                     setIsHybridModalOpen(false);
                   }
