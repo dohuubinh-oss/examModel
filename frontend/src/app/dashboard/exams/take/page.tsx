@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Send, Info, Grid, Sparkles, X, Camera, AlertCircle, CircleDot } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Send, Info, Grid, Sparkles, X, Camera, AlertCircle, CircleDot, Keyboard } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
 import { TimerBadge } from '@/components/ui/TimerBadge';
@@ -476,10 +476,11 @@ export default function TakeExamPage() {
                         setHybridFormula('');
                         setIsHybridModalOpen(true);
                       }}
-                      className="px-3 bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 rounded-lg flex items-center gap-1 font-semibold text-xs py-1.5 cursor-pointer"
+                      className="px-3 bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 rounded-lg flex items-center gap-1.5 font-semibold text-xs py-1.5 cursor-pointer group transition-all"
+                      title="Mở bàn phím công thức MathLive chuyên sâu"
                     >
-                      <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse" />
-                      Nâng cao
+                      <Keyboard className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+                      Bàn phím ảo
                     </Button>
                   </div>
 
@@ -488,9 +489,22 @@ export default function TakeExamPage() {
                     id={`essay-textarea-${activeQuestion.id}`}
                     value={answers[activeQuestion.id] || ''}
                     onChange={handleEssayChange}
-                    placeholder="Nhập lời giải chi tiết tại đây (Sử dụng các nút công cụ hoặc bấm 'Nâng cao' để mở bàn phím công thức)..."
+                    placeholder="Nhập lời giải chi tiết tại đây (Sử dụng các nút công cụ hoặc bấm 'Bàn phím ảo' để mở bàn phím công thức)..."
                     className="p-6 resize-none border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-slate-200 placeholder-slate-400 leading-relaxed text-base h-64 outline-none"
                   />
+
+                  {/* Live LaTeX Equation Preview */}
+                  {answers[activeQuestion.id] && (
+                    <div className="mx-6 mb-6 p-4 bg-primary/[0.02] dark:bg-slate-900/50 rounded-xl border border-primary/10 dark:border-slate-800">
+                      <p className="text-[10px] text-slate-400 font-bold mb-2 uppercase tracking-wider flex items-center gap-1">
+                        <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse flex-shrink-0" />
+                        Xem trước công thức (Renders Beautifully):
+                      </p>
+                      <div className="text-slate-800 dark:text-slate-200 text-sm leading-relaxed whitespace-pre-wrap break-words min-h-[40px] px-1 py-0.5">
+                        <Latex text={answers[activeQuestion.id]} />
+                      </div>
+                    </div>
+                  )}
 
                   {/* Bottom Upload Zone */}
                   <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-200 dark:border-slate-800">
