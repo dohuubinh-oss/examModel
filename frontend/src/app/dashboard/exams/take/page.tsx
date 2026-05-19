@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from 'next/navigation';
-import { ChevronLeft, ChevronRight, Send, Info, Grid, Sparkles, X, Camera, AlertCircle, CircleDot, Keyboard } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Send, Info, Grid, Sparkles, X, Camera, AlertCircle, CircleDot, Keyboard, Eye, PenTool } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Progress } from '@/components/ui/Progress';
 import { TimerBadge } from '@/components/ui/TimerBadge';
@@ -114,6 +114,7 @@ export default function TakeExamPage() {
   // MathLive Hybrid Insertion Modal state
   const [isHybridModalOpen, setIsHybridModalOpen] = React.useState<boolean>(false);
   const [hybridFormula, setHybridFormula] = React.useState<string>('');
+  const [isPreviewMode, setIsPreviewMode] = React.useState<boolean>(false);
 
   // Countdown timer effect
   React.useEffect(() => {
@@ -446,7 +447,7 @@ export default function TakeExamPage() {
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
                   {/* Math symbols toolbar */}
                   <div className="border-b border-slate-200 dark:border-slate-800 p-2 flex flex-wrap gap-2 bg-slate-50 dark:bg-slate-900/60 justify-between items-center">
-                    <div className="flex flex-wrap gap-1.5">
+                    <div className="flex flex-wrap gap-1.5 items-center">
                       {[
                         { label: '√x', value: ' $\\sqrt{x}$ ' },
                         { label: 'a/b', value: ' $\\frac{a}{b}$ ' },
@@ -464,46 +465,67 @@ export default function TakeExamPage() {
                           variant="math" 
                           size="math" 
                           onClick={() => handleInsertSymbol(sym.value)}
+                          disabled={isPreviewMode}
                         >
                           {sym.label}
                         </Button>
                       ))}
+
+                      <div className="h-4 w-[1px] bg-slate-200 dark:bg-slate-800 mx-1" />
+
+                      {/* Icon chèn công thức từ Bàn phím ảo MathLive (Chỉ chứa Icon, cực kỳ chuyên nghiệp) */}
+                      <Button 
+                        variant="math" 
+                        size="math" 
+                        onClick={() => {
+                          setHybridFormula('');
+                          setIsHybridModalOpen(true);
+                        }}
+                        disabled={isPreviewMode}
+                        className="p-1.5 bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 rounded-lg flex items-center justify-center cursor-pointer group transition-all"
+                        title="Mở bàn phím ảo MathLive chuyên sâu"
+                      >
+                        <Keyboard className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
+                      </Button>
                     </div>
-                    <Button 
-                      variant="math" 
-                      size="math" 
-                      onClick={() => {
-                        setHybridFormula('');
-                        setIsHybridModalOpen(true);
-                      }}
-                      className="px-3 bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 rounded-lg flex items-center gap-1.5 font-semibold text-xs py-1.5 cursor-pointer group transition-all"
-                      title="Mở bàn phím công thức MathLive chuyên sâu"
+
+                    {/* Nút Xem trước / Soạn thảo chuyên nghiệp dạng Eye / PenTool */}
+                    <Button
+                      variant="math"
+                      size="math"
+                      onClick={() => setIsPreviewMode(!isPreviewMode)}
+                      className={`p-1.5 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
+                        isPreviewMode 
+                          ? 'bg-primary text-white border-primary hover:bg-primary/95 shadow-sm shadow-primary/15 animate-all'
+                          : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'
+                      }`}
+                      title={isPreviewMode ? "Quay lại chế độ soạn thảo" : "Xem trước công thức toán học đẹp"}
                     >
-                      <Keyboard className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
-                      Bàn phím ảo
+                      {isPreviewMode ? (
+                        <PenTool className="h-4 w-4" />
+                      ) : (
+                        <Eye className="h-4 w-4" />
+                      )}
                     </Button>
                   </div>
 
                   {/* Editor Body */}
-                  <textarea
-                    id={`essay-textarea-${activeQuestion.id}`}
-                    value={answers[activeQuestion.id] || ''}
-                    onChange={handleEssayChange}
-                    placeholder="Nhập lời giải chi tiết tại đây (Sử dụng các nút công cụ hoặc bấm 'Bàn phím ảo' để mở bàn phím công thức)..."
-                    className="p-6 resize-none border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-slate-200 placeholder-slate-400 leading-relaxed text-base h-64 outline-none"
-                  />
-
-                  {/* Live LaTeX Equation Preview */}
-                  {answers[activeQuestion.id] && (
-                    <div className="mx-6 mb-6 p-4 bg-primary/[0.02] dark:bg-slate-900/50 rounded-xl border border-primary/10 dark:border-slate-800">
-                      <p className="text-[10px] text-slate-400 font-bold mb-2 uppercase tracking-wider flex items-center gap-1">
-                        <Sparkles className="h-3.5 w-3.5 text-primary animate-pulse flex-shrink-0" />
-                        Xem trước công thức (Renders Beautifully):
-                      </p>
-                      <div className="text-slate-800 dark:text-slate-200 text-sm leading-relaxed whitespace-pre-wrap break-words min-h-[40px] px-1 py-0.5">
+                  {isPreviewMode ? (
+                    <div className="p-6 min-h-[256px] text-slate-800 dark:text-slate-200 leading-relaxed text-base bg-transparent overflow-y-auto max-h-64 custom-scrollbar">
+                      {answers[activeQuestion.id] ? (
                         <Latex text={answers[activeQuestion.id]} />
-                      </div>
+                      ) : (
+                        <span className="text-slate-400 font-medium italic">Không có nội dung lời giải để hiển thị công thức. Vui lòng quay lại chế độ soạn thảo để nhập lời giải.</span>
+                      )}
                     </div>
+                  ) : (
+                    <textarea
+                      id={`essay-textarea-${activeQuestion.id}`}
+                      value={answers[activeQuestion.id] || ''}
+                      onChange={handleEssayChange}
+                      placeholder="Nhập lời giải chi tiết tại đây (Sử dụng các nút công cụ hoặc bấm vào biểu tượng bàn phím để mở bàn phím công thức)..."
+                      className="p-6 resize-none border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-slate-200 placeholder-slate-400 leading-relaxed text-base h-64 outline-none"
+                    />
                   )}
 
                   {/* Bottom Upload Zone */}
