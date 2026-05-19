@@ -2,7 +2,7 @@ import React from 'react';
 import { cn } from '@/lib/utils';
 
 export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
-  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'outline';
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'outline' | 'red-outline' | 'blue-filled' | 'blue-pill';
   size?: 'sm' | 'md';
 }
 
@@ -17,6 +17,9 @@ export const Badge = React.forwardRef<HTMLDivElement, BadgeProps>(
       warning: "bg-amber-500/10 text-amber-600 border-transparent",
       danger: "bg-red-500/10 text-red-600 border-transparent",
       outline: "border border-slate-300 text-slate-700 bg-white",
+      'red-outline': "bg-red-100 text-red-600 border border-red-200 font-black tracking-widest text-[10px]",
+      'blue-filled': "bg-blue-100 text-primary border-transparent text-[9px] font-bold",
+      'blue-pill': "px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest",
     };
 
     const sizes = {

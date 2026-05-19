@@ -74,7 +74,10 @@ export default function QuestionBankPage() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline-slate">
+            <Button 
+              variant="outline-slate"
+              onClick={() => router.push('/question-bank/import')}
+            >
               <Upload size={20} />
               Nhập từ JSON
             </Button>
