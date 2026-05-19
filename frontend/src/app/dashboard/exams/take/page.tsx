@@ -9,6 +9,12 @@ import { TimerBadge } from '@/components/ui/TimerBadge';
 import { OptionButton } from '@/components/ui/OptionButton';
 import { QNode, QNodeStatus } from '@/components/ui/QNode';
 import { Latex } from '@/components/ui/Latex';
+import dynamic from 'next/dynamic';
+
+const MathfieldInput = dynamic(
+  () => import('@/components/ui/MathfieldInput').then((mod) => mod.MathfieldInput),
+  { ssr: false }
+);
 
 interface Question {
   id: string;
@@ -104,6 +110,13 @@ export default function TakeExamPage() {
 
   // Success overlays
   const [showSubmitSuccess, setShowSubmitSuccess] = React.useState<boolean>(false);
+
+  // MathLive Essay Mode toggle: 'text' or 'mathlive'
+  const [essayMode, setEssayMode] = React.useState<'text' | 'mathlive'>('text');
+  
+  // MathLive Hybrid Insertion Modal state
+  const [isHybridModalOpen, setIsHybridModalOpen] = React.useState<boolean>(false);
+  const [hybridFormula, setHybridFormula] = React.useState<string>('');
 
   // Countdown timer effect
   React.useEffect(() => {
@@ -412,29 +425,91 @@ export default function TakeExamPage() {
 
                 {/* Khung Editor */}
                 <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-sm overflow-hidden flex flex-col">
+                  {/* Mode Tabs */}
+                  <div className="flex border-b border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/40 p-1 gap-1">
+                    <button
+                      onClick={() => setEssayMode('text')}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        essayMode === 'text'
+                          ? 'bg-white dark:bg-slate-900 text-primary shadow-sm border border-slate-100 dark:border-slate-800 font-semibold'
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-semibold'
+                      }`}
+                    >
+                      Văn bản tự do
+                    </button>
+                    <button
+                      onClick={() => setEssayMode('mathlive')}
+                      className={`flex-1 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        essayMode === 'mathlive'
+                          ? 'bg-white dark:bg-slate-900 text-primary shadow-sm border border-slate-100 dark:border-slate-800 font-semibold'
+                          : 'text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 font-semibold'
+                      }`}
+                    >
+                      Soạn công thức (MathLive)
+                    </button>
+                  </div>
+
                   {/* Math symbols toolbar */}
-                  <div className="border-b border-slate-200 dark:border-slate-800 p-2 flex flex-wrap gap-1.5 bg-slate-50 dark:bg-slate-900/60">
-                    {['√', 'π', 'Δ', '⊥', '∠', '²', '÷'].map((sym) => (
+                  <div className="border-b border-slate-200 dark:border-slate-800 p-2 flex flex-wrap gap-1.5 bg-slate-50 dark:bg-slate-900/60 justify-between items-center">
+                    <div className="flex flex-wrap gap-1.5">
+                      {['√', 'π', 'Δ', '⊥', '∠', '²', '÷'].map((sym) => (
+                        <Button 
+                          key={sym} 
+                          variant="math" 
+                          size="math" 
+                          onClick={() => handleInsertSymbol(sym)}
+                        >
+                          {sym}
+                        </Button>
+                      ))}
+                    </div>
+                    {essayMode === 'text' && (
                       <Button 
-                        key={sym} 
                         variant="math" 
                         size="math" 
-                        onClick={() => handleInsertSymbol(sym)}
+                        onClick={() => {
+                          setHybridFormula('');
+                          setIsHybridModalOpen(true);
+                        }}
+                        className="px-3 bg-primary/5 text-primary hover:bg-primary/10 border border-primary/10 rounded-lg flex items-center gap-1 font-semibold text-xs py-1 cursor-pointer"
                       >
-                        {sym}
+                        <Sparkles className="h-3 w-3 text-primary animate-pulse" />
+                        Chèn Công thức (Mathfield)
                       </Button>
-                    ))}
+                    )}
                   </div>
-                  {/* Textarea input */}
-                  <textarea
-                    value={answers[activeQuestion.id] || ''}
-                    onChange={handleEssayChange}
-                    placeholder="Nhập lời giải chi tiết tại đây (Sử dụng LaTeX hoặc các công cụ hỗ trợ trên)..."
-                    className="p-6 resize-none border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-slate-200 placeholder-slate-400 leading-relaxed text-base h-64"
-                  />
+
+                  {/* Editor Body */}
+                  {essayMode === 'text' ? (
+                    <textarea
+                      value={answers[activeQuestion.id] || ''}
+                      onChange={handleEssayChange}
+                      placeholder="Nhập lời giải chi tiết tại đây (Sử dụng LaTeX hoặc các công cụ hỗ trợ trên)..."
+                      className="p-6 resize-none border-none focus:outline-none focus:ring-0 bg-transparent text-slate-800 dark:text-slate-200 placeholder-slate-400 leading-relaxed text-base h-64 outline-none"
+                    />
+                  ) : (
+                    <div className="p-5 bg-transparent min-h-[256px] flex flex-col justify-start">
+                      <p className="text-xs text-slate-400 font-semibold mb-2">Soạn thảo công thức chuyên sâu (LaTeX):</p>
+                      <MathfieldInput
+                        value={answers[activeQuestion.id] || ''}
+                        onChange={(val) => {
+                          setAnswers(prev => ({
+                            ...prev,
+                            [activeQuestion.id]: val
+                          }));
+                        }}
+                        placeholder="Gõ công thức toán học chuyên sâu tại đây (ví dụ: \int_{a}^{b} f(x) dx, \frac{-b \pm \sqrt{\Delta}}{2a})...."
+                        className="border-slate-200 dark:border-slate-800"
+                      />
+                      <div className="mt-4 p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800 text-xs text-slate-500 font-semibold leading-relaxed">
+                        Bạn đang sử dụng trình soạn thảo công thức MathLive. Công thức của bạn sẽ được lưu trực tiếp dưới dạng LaTeX chất lượng cao để hệ thống hiển thị chính xác.
+                      </div>
+                    </div>
+                  )}
+
                   {/* Bottom Upload Zone */}
                   <div className="p-4 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-200 dark:border-slate-800">
-                    <button className="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors group">
+                    <button className="w-full py-4 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg flex flex-col items-center justify-center hover:border-primary hover:bg-primary/5 transition-colors group cursor-pointer animate-all">
                       <Camera className="h-5 w-5 text-slate-400 group-hover:text-primary mb-1" />
                       <span className="text-sm font-medium text-slate-600 dark:text-slate-400 group-hover:text-primary">
                         Tải ảnh chụp lời giải bài làm tay
@@ -661,6 +736,85 @@ export default function TakeExamPage() {
             >
               Quay lại danh sách đề thi
             </Button>
+          </div>
+        </div>
+      )}
+
+      {/* OVERLAY: MATHLIVE HYBRID EQUATION INSERTION DIALOG */}
+      {isHybridModalOpen && (
+        <div 
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsHybridModalOpen(false);
+          }}
+          className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[100] flex items-center justify-center p-4 cursor-pointer"
+        >
+          <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl max-w-lg w-full shadow-2xl border border-slate-100 dark:border-slate-800/80 flex flex-col animate-in fade-in zoom-in-95 duration-200 cursor-default">
+            <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+              <span className="flex items-center gap-2 text-primary font-bold text-base">
+                <Sparkles className="h-5 w-5 text-primary animate-pulse" />
+                Trình soạn công thức MathLive
+              </span>
+              <Button 
+                variant="ghost-danger" 
+                size="icon" 
+                className="rounded-full h-8 w-8 cursor-pointer"
+                onClick={() => setIsHybridModalOpen(false)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+            
+            <div className="py-6 space-y-4 flex-grow">
+              <p className="text-xs text-slate-500 dark:text-slate-400 leading-relaxed font-semibold">
+                Sử dụng bàn phím ảo bên dưới để soạn các công thức toán học phức tạp (phân số, căn thức, tích phân,...). Công thức sẽ tự động chèn vào bài làm của bạn.
+              </p>
+              
+              <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden shadow-sm">
+                <MathfieldInput
+                  value={hybridFormula}
+                  onChange={(val) => setHybridFormula(val)}
+                  placeholder="Gõ công thức của bạn ở đây..."
+                  className="border-none"
+                />
+              </div>
+
+              {hybridFormula && (
+                <div className="p-3 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-100 dark:border-slate-800 text-xs text-slate-600 dark:text-slate-400 font-semibold">
+                  <span className="font-bold block text-slate-500 mb-1">Mã LaTeX xem trước:</span>
+                  <code className="bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-primary text-[11px] block overflow-x-auto whitespace-pre custom-scrollbar">
+                    {`$${hybridFormula}$`}
+                  </code>
+                </div>
+              )}
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+              <Button
+                variant="outline-slate"
+                onClick={() => setIsHybridModalOpen(false)}
+                className="px-5 font-semibold text-xs rounded-xl cursor-pointer"
+              >
+                Hủy bỏ
+              </Button>
+              <Button
+                onClick={() => {
+                  if (hybridFormula) {
+                    const currentAnswer = answers[activeQuestion.id] || '';
+                    // Wrapped in KaTeX inline tags ($...$)
+                    setAnswers(prev => ({
+                      ...prev,
+                      [activeQuestion.id]: currentAnswer + ` $${hybridFormula}$ `
+                    }));
+                    setHybridFormula('');
+                    setIsHybridModalOpen(false);
+                  }
+                }}
+                disabled={!hybridFormula.trim()}
+                className="px-6 font-bold text-xs bg-primary hover:bg-primary/95 text-white rounded-xl shadow-md shadow-primary/10 disabled:opacity-40 cursor-pointer"
+              >
+                Chèn vào bài làm
+              </Button>
+            </div>
           </div>
         </div>
       )}

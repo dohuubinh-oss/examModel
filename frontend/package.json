@@ -16,7 +16,8 @@
     "next": "16.2.6",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "tailwind-merge": "^2.2.0"
+    "tailwind-merge": "^2.2.0",
+    "mathlive": "^0.98.6"
   },
   "devDependencies": {
     "@types/katex": "^0.16.8",
