@@ -72,15 +72,15 @@ export default function Home() {
 
           <div className="flex items-center gap-4">
             <Button 
-              variant="pill-outline" 
-              size="pill"
+              variant="outline" 
+              pill
               onClick={() => router.push('/login')}
             >
               Đăng nhập
             </Button>
             <Button 
-              variant="pill-primary" 
-              size="pill"
+              variant="default" 
+              pill
               onClick={() => router.push('/dashboard/student')}
             >
               Học ngay
@@ -110,8 +110,8 @@ export default function Home() {
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
               <Button 
-                variant="large-primary" 
-                size="large"
+                variant="default" 
+                size="lg"
                 className="flex items-center justify-center gap-2"
                 onClick={() => router.push('/register')}
               >
@@ -120,8 +120,8 @@ export default function Home() {
               </Button>
               
               <Button 
-                variant="large-outline" 
-                size="large"
+                variant="outline" 
+                size="lg"
                 onClick={() => {
                   const el = document.getElementById('features');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
@@ -358,8 +358,9 @@ export default function Home() {
               </div>
 
               <Button 
-                variant="pricing-outline" 
-                size="pricing"
+                variant="outline" 
+                fullWidth
+                className="py-3 h-auto text-sm border-2 font-black rounded-xl hover:bg-slate-50"
                 onClick={() => router.push('/register')}
               >
                 Đăng ký ngay
@@ -415,8 +416,9 @@ export default function Home() {
               </div>
 
               <Button 
-                variant="pricing-primary" 
-                size="pricing"
+                variant="default" 
+                fullWidth
+                className="py-3 h-auto text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-none font-black rounded-xl transition-all shadow-md shadow-blue-500/10"
                 onClick={() => router.push('/register')}
               >
                 Nâng cấp Pro ngay

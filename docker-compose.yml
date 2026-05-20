@@ -12,7 +12,7 @@ services:
     ports:
       - "5432:5432"
     volumes:
-      - db_data:/var/lib/postgresql/data
+      - db_data:/var/lib/postgresql
 
   cache:
     image: redis:8-alpine
@@ -30,7 +30,7 @@ services:
     # Removed public ports: internal communication only
     environment:
       DATABASE_URL: postgres://exam_user:exam_password@db:5432/exam_db?sslmode=disable
-      REDIS_URL: redis:6379
+      REDIS_URL: cache:6379
     depends_on:
       - db
       - cache

@@ -292,7 +292,7 @@ export default function StudentDashboardPage() {
                   Chào mừng trở lại, {student.name}!
                 </h2>
                 {student.isPro && (
-                  <Badge variant="blue-filled" className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-black border-none shadow-sm uppercase py-0.5 px-2.5">
+                  <Badge variant="primary" className="bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[9px] font-black border-none shadow-sm uppercase py-0.5 px-2.5">
                     PRO
                   </Badge>
                 )}

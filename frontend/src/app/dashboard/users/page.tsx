@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { 
   Plus, 
   Search, 
-  Settings, 
   Sparkles,
   FilterX,
   School,
@@ -42,7 +41,7 @@ export default function UserManagementPage() {
       email: "an.nguyen@student.edu.vn",
       avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCjkU3uLAVacqKFDVSrWvAchNgIwXaxak9xuK4XVCf4BYXd9yH9d5P8WTFxPrzYvQgBh_9qphd6ey_bGrjXTTvavr8JNB3vCobxaF9Xnu7IvK4VFNxuaHA4sBdKhkV4px-7l66gTHKkXV6JbFCAgoshfCRI_u_a7UoVbYZU2G0QB2fhUFkWf_Ea-gA28mwNyWwwlPzlJdnksvCWGRE1RuXYR8BtSFOwwMc7MqY06FeLavosHXYkcFJwvmkTCDgAUZPKTv2_h97XL5Eq",
       role: "student",
-      grade: "Lớp 10A1",
+      grade: "Lớp 9A1",
       joinDate: "12/05/2023",
       status: "active",
       hasPulse: true
@@ -64,7 +63,7 @@ export default function UserManagementPage() {
       email: "danh.lc@student.edu.vn",
       avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuC0aPR0dT5v8nP-PM-39UXExh0YeHX4p-P5Yf-fTYseqh2z9e3ZVSZMuv6eJnZN98htW8MRDJX63P3A4kucTPhhRV2ijpuVeFWJdHypoGE_htNsXcrpgMtxm_w6ozo7vEzbPpgu2tyXge9TCd81g4DBX1006t5TrxBbUpKtOOklo7mtncO4MkvljV-9fV9ybu6IS9TtgXS6Bu_7Ad6D8HZzFLLDlXDYMVJ3_ZyCt7Oh_u9UYmXDQfuNQfrD7QnsbSeJcV1C9BFqHoBQ",
       role: "student",
-      grade: "Lớp 11B2",
+      grade: "Lớp 5C",
       joinDate: "15/08/2023",
       status: "locked",
       hasPulse: false
@@ -86,7 +85,7 @@ export default function UserManagementPage() {
       email: "ha.ht@student.edu.vn",
       avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDu1qOUC95LwaE0AojL8_i2ICCv8vbM-6rrPNqraV43NeX9d5Wp9UHkwb17fJAbGCY9bwlKeE7j_MHiqCw6kYQvUhBnGj8TS3z3fbN3a5tHgxOHu_zPk3-9oz7Q7Gyo47P9sNRuin3goL1CLbT9-WlXHxeTKTzUlxoy91pfPQTyFZTGEMaUf7dUuYqFzxwU0QiqcEK9ZBMWMMqh8y1bLFIhIRvKrr7VqWy2sF6VtwbjfxF7Dvcdcp6-2KCzF9wj9t6LYcy1jiOcgqtT",
       role: "student",
-      grade: "Lớp 12A3",
+      grade: "Luyện thi 10",
       joinDate: "10/11/2023",
       status: "active",
       hasPulse: false
@@ -123,11 +122,12 @@ export default function UserManagementPage() {
 
       // 2. Grade filter
       const matchGrade = selectedGrades.length === 0 || selectedGrades.some(g => {
-        if (g === '1-5' && (user.grade.includes('Lớp 1') || user.grade.includes('Lớp 2') || user.grade.includes('Lớp 3') || user.grade.includes('Lớp 4') || user.grade.includes('Lớp 5')) && !user.grade.includes('Lớp 10') && !user.grade.includes('Lớp 11') && !user.grade.includes('Lớp 12')) return true;
-        if (g === '6-9' && (user.grade.includes('Lớp 6') || user.grade.includes('Lớp 7') || user.grade.includes('Lớp 8') || user.grade.includes('Lớp 9')) && !user.grade.includes('Lớp 10')) return true;
-        if (g === '10' && user.grade.includes('Lớp 10')) return true;
-        if (g === '11' && user.grade.includes('Lớp 11')) return true;
-        if (g === '12' && user.grade.includes('Lớp 12')) return true;
+        if (g === '5' && user.grade.includes('Lớp 5')) return true;
+        if (g === '6' && user.grade.includes('Lớp 6')) return true;
+        if (g === '7' && user.grade.includes('Lớp 7')) return true;
+        if (g === '8' && user.grade.includes('Lớp 8')) return true;
+        if (g === '9' && user.grade.includes('Lớp 9')) return true;
+        if (g === '10' && (user.grade.includes('10') || user.grade.toLowerCase().includes('luyện thi'))) return true;
         return false;
       });
 
@@ -207,9 +207,6 @@ export default function UserManagementPage() {
               <Plus size={18} />
               Thêm người dùng mới
             </Button>
-            <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-              <Settings size={24} />
-            </button>
           </div>
         </div>
       </header>
@@ -246,13 +243,13 @@ export default function UserManagementPage() {
             
             {/* Vai trò filter */}
             <Collapsible title="Vai trò" icon={<UserCheck className="h-4 w-4 text-slate-400" />} open>
-              <div className="flex flex-col gap-2.5 pt-2">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-2">
                 {[
                   { key: 'student', label: 'Học sinh' },
                   { key: 'teacher', label: 'Giáo viên' },
                   { key: 'admin', label: 'Quản trị viên' }
                 ].map(role => (
-                  <label key={role.key} className="flex items-center gap-2.5 text-xs text-slate-600 cursor-pointer select-none">
+                  <label key={role.key} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox
                       checkboxSize="sm"
                       checked={selectedRoles.includes(role.key)}
@@ -266,15 +263,16 @@ export default function UserManagementPage() {
 
             {/* Khối lớp filter */}
             <Collapsible title="Khối lớp" icon={<School className="h-4 w-4 text-slate-400" />} open>
-              <div className="flex flex-col gap-2.5 pt-2">
+              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-2">
                 {[
-                  { key: '1-5', label: 'Lớp 1 - 5' },
-                  { key: '6-9', label: 'Lớp 6 - 9' },
-                  { key: '10', label: 'Lớp 10' },
-                  { key: '11', label: 'Lớp 11' },
-                  { key: '12', label: 'Lớp 12' }
+                  { key: '5', label: 'Lớp 5' },
+                  { key: '6', label: 'Lớp 6' },
+                  { key: '7', label: 'Lớp 7' },
+                  { key: '8', label: 'Lớp 8' },
+                  { key: '9', label: 'Lớp 9' },
+                  { key: '10', label: 'Luyện thi 10' }
                 ].map(grade => (
-                  <label key={grade.key} className="flex items-center gap-2.5 text-xs text-slate-600 cursor-pointer select-none">
+                  <label key={grade.key} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox
                       checkboxSize="sm"
                       checked={selectedGrades.includes(grade.key)}

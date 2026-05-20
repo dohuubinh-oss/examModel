@@ -8,6 +8,7 @@ import (
 	"os"
 
 	"github.com/gin-gonic/gin"
+	"github.com/modeptrai/exam-model-backend/controllers"
 	"github.com/modeptrai/exam-model-backend/models"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
@@ -84,6 +85,23 @@ func main() {
 		v1.GET("/ping", func(c *gin.Context) {
 			c.JSON(http.StatusOK, gin.H{"message": "pong"})
 		})
+
+		// Topic endpoints
+		topicCtrl := controllers.NewTopicController(DB)
+		v1.GET("/topics", topicCtrl.GetTopics)
+		v1.GET("/topics/:id", topicCtrl.GetTopic)
+		v1.POST("/topics", topicCtrl.CreateTopic)
+		v1.PUT("/topics/:id", topicCtrl.UpdateTopic)
+		v1.DELETE("/topics/:id", topicCtrl.DeleteTopic)
+		v1.POST("/topics/seed", topicCtrl.SeedTopics)
+
+		// Question endpoints
+		questionCtrl := controllers.NewQuestionController(DB)
+		v1.GET("/questions", questionCtrl.GetQuestions)
+		v1.GET("/questions/:id", questionCtrl.GetQuestion)
+		v1.POST("/questions", questionCtrl.CreateQuestions)
+		v1.PUT("/questions/:id", questionCtrl.UpdateQuestion)
+		v1.DELETE("/questions/:id", questionCtrl.DeleteQuestion)
 	}
 
 	// 4. Start Server

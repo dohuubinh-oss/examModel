@@ -416,9 +416,9 @@ export default function LecturePage() {
             {/* Action Cards */}
             <div className="bg-white p-6 rounded-xl shadow-sm border border-slate-200/60 space-y-4">
               <Button 
-                variant="action-primary" 
-                size="action"
-                className="flex items-center justify-center gap-2"
+                variant="default" 
+                fullWidth
+                className="py-3.5 h-auto text-sm rounded-xl font-bold flex items-center justify-center gap-2"
                 onClick={handleDownload}
               >
                 <span className="material-symbols-outlined select-none">download</span>
@@ -426,9 +426,9 @@ export default function LecturePage() {
               </Button>
               
               <Button 
-                variant="action-secondary" 
-                size="action"
-                className="flex items-center justify-center gap-2"
+                variant="outline" 
+                fullWidth
+                className="py-3.5 h-auto text-sm rounded-xl font-bold flex items-center justify-center gap-2 bg-white text-slate-700 border-slate-200 hover:bg-slate-50 hover:text-slate-800 shadow-sm"
                 onClick={handleSave}
               >
                 <span className="material-symbols-outlined select-none">
@@ -480,8 +480,7 @@ export default function LecturePage() {
                   Hệ thống bài giảng từ cơ bản đến nâng cao cùng đội ngũ giáo viên top đầu.
                 </p>
                 <Button 
-                  variant="pricing-primary" 
-                  size="pricing"
+                  variant="default" 
                   className="bg-white hover:bg-slate-100 text-slate-900 hover:text-slate-900 font-bold text-sm w-full py-3 rounded-lg border-none hover:scale-100 shadow-md"
                   onClick={() => alert("Đăng ký khóa học ngay...")}
                 >

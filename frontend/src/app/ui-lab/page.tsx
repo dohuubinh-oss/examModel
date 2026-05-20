@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
+import { Tag } from '@/components/ui/Tag';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Collapsible } from '@/components/ui/Collapsible';
 import { FloatingActionBar } from '@/components/ui/FloatingActionBar';
@@ -679,11 +680,11 @@ export default function UILabPage() {
                 <div className="flex flex-wrap items-center gap-3">
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Red Outline Badge</span>
-                    <Badge variant="red-outline">Câu hỏi chùm</Badge>
+                    <Badge variant="danger" className="bg-red-100 text-red-600 border border-red-200">Câu hỏi chùm</Badge>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Blue Filled Badge</span>
-                    <Badge variant="blue-filled">Thông minh</Badge>
+                    <Badge variant="primary" className="bg-blue-100 text-primary border-transparent">Thông minh</Badge>
                   </div>
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] text-slate-400 font-bold uppercase">Default Badges</span>
@@ -699,21 +700,14 @@ export default function UILabPage() {
                   <span className="block text-xs font-semibold text-slate-500">Thẻ (Removable Pill Badges)</span>
                   <div className="flex flex-wrap gap-2">
                     {tags.map((tag) => (
-                      <span 
+                      <Tag
                         key={tag}
-                        className="flex items-center gap-1.5 px-3 py-1 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest"
-                      >
-                        {tag}
-                        <button 
-                          onClick={() => {
-                            setTags(tags.filter(t => t !== tag));
-                            setQuestionActionLog(`Đã xóa thẻ: "${tag}"`);
-                          }}
-                          className="hover:text-blue-800 transition-colors"
-                        >
-                          <X size={12} />
-                        </button>
-                      </span>
+                        label={tag}
+                        onRemove={() => {
+                          setTags(tags.filter(t => t !== tag));
+                          setQuestionActionLog(`Đã xóa thẻ: "${tag}"`);
+                        }}
+                      />
                     ))}
                   </div>
                   <div className="relative max-w-[280px] pt-1">
@@ -757,7 +751,11 @@ export default function UILabPage() {
                   {['NHẬN BIẾT', 'THÔNG HIỂU', 'VẬN DỤNG', 'VẬN DỤNG CAO'].map((diff) => (
                     <Button
                       key={diff}
-                      variant={activeDifficulty === diff ? 'difficulty-active' : 'difficulty-inactive'}
+                      variant="outline-slate"
+                      className={activeDifficulty === diff 
+                        ? "bg-blue-50 text-primary border-blue-500/30 hover:bg-blue-50 shadow-sm text-xs font-black py-4 border rounded-xl"
+                        : "bg-white text-slate-500 hover:text-slate-700 hover:bg-slate-50/50 border border-slate-200 text-xs font-bold py-4 rounded-xl shadow-sm"
+                      }
                       onClick={() => {
                         setActiveDifficulty(diff);
                         setQuestionActionLog(`Thay đổi độ khó thành: "${diff}"`);
@@ -774,8 +772,9 @@ export default function UILabPage() {
                 <span className="block text-xs font-semibold text-slate-500">Nút thêm tròn (Circular Add Button)</span>
                 <div className="flex items-center gap-4">
                   <Button 
-                    variant="circle"
-                    size="circle"
+                    variant="outline-slate"
+                    circle
+                    className="w-14 h-14 bg-white text-primary shadow-lg border border-slate-200 hover:scale-110 active:scale-95 group transition-all"
                     onClick={() => setQuestionActionLog('Đã Click [Thêm câu hỏi nhỏ mới]')}
                     title="Thêm câu hỏi nhỏ mới"
                   >
@@ -897,12 +896,12 @@ export default function UILabPage() {
             
             <h3 className="font-semibold text-slate-700 pt-4">MathButton (Variant math)</h3>
             <div className="flex flex-wrap gap-2 bg-slate-50 p-4 border border-slate-200 rounded-lg">
-              <Button variant="math" size="math">√</Button>
-              <Button variant="math" size="math">π</Button>
-              <Button variant="math" size="math">Δ</Button>
-              <Button variant="math" size="math">⊥</Button>
-              <Button variant="math" size="math">∠</Button>
-              <Button variant="math" size="math">x²</Button>
+              <Button variant="ghost" className="font-serif w-8 h-8 p-0 text-base rounded">√</Button>
+              <Button variant="ghost" className="font-serif w-8 h-8 p-0 text-base rounded">π</Button>
+              <Button variant="ghost" className="font-serif w-8 h-8 p-0 text-base rounded">Δ</Button>
+              <Button variant="ghost" className="font-serif w-8 h-8 p-0 text-base rounded">⊥</Button>
+              <Button variant="ghost" className="font-serif w-8 h-8 p-0 text-base rounded">∠</Button>
+              <Button variant="ghost" className="font-serif w-8 h-8 p-0 text-base rounded">x²</Button>
             </div>
           </div>
 
@@ -1005,7 +1004,7 @@ export default function UILabPage() {
                   <div className="flex items-center gap-2">
                     <span className="material-icons-outlined text-primary text-xl">code</span>
                     <h4 className="text-xs font-bold text-slate-800 uppercase tracking-tight">Nhập nhanh bằng JSON</h4>
-                    <Badge variant="blue-filled">Thông minh</Badge>
+                    <Badge variant="primary" className="bg-blue-100 text-primary border-transparent">Thông minh</Badge>
                   </div>
                 </div>
                 <div className="relative">
@@ -1128,8 +1127,9 @@ export default function UILabPage() {
               {/* Circular plus button to add small question */}
               <div className="flex justify-center">
                 <Button 
-                  variant="circle"
-                  size="circle"
+                  variant="outline-slate"
+                  circle
+                  className="w-14 h-14 bg-white text-primary shadow-lg border border-slate-200 hover:scale-110 active:scale-95 group transition-all"
                   onClick={handleAddQuestion}
                   title="Thêm câu hỏi nhỏ mới vào chùm"
                 >
@@ -1178,9 +1178,12 @@ export default function UILabPage() {
                       {['NHẬN BIẾT', 'THÔNG HIỂU', 'VẬN DỤNG', 'VẬN DỤNG CAO'].map((diff) => (
                         <Button
                           key={diff}
-                          variant={bulkQuestions[bulkCurrentQ - 1]?.difficulty === diff ? 'difficulty-active' : 'difficulty-inactive'}
+                          variant="outline-slate"
+                          className={bulkQuestions[bulkCurrentQ - 1]?.difficulty === diff 
+                            ? "bg-blue-50 text-primary border-blue-500/30 hover:bg-blue-50 shadow-sm font-black border rounded-xl py-3 text-[9px]"
+                            : "bg-white text-slate-500 hover:text-slate-700 hover:bg-slate-50/50 border border-slate-200 font-bold rounded-xl shadow-sm py-3 text-[9px]"
+                          }
                           onClick={() => handleDifficultyChange(diff)}
-                          className="py-3 text-[9px]"
                         >
                           {diff}
                         </Button>
@@ -1232,15 +1235,17 @@ export default function UILabPage() {
                 <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pill Buttons (Thanh Điều Hướng)</span>
                 <div className="flex flex-wrap gap-4">
                   <Button 
-                    variant="pill-primary" 
-                    size="pill"
+                    variant="default" 
+                    pill
+                    className="px-6 py-2.5 h-auto text-sm"
                     onClick={() => setMarketingActionLog("Click: Pill Primary ('Học ngay')")}
                   >
                     Học ngay
                   </Button>
                   <Button 
-                    variant="pill-outline" 
-                    size="pill"
+                    variant="outline" 
+                    pill
+                    className="px-6 py-2.5 h-auto text-sm border-2 border-primary text-primary font-black hover:bg-primary hover:text-white bg-transparent"
                     onClick={() => setMarketingActionLog("Click: Pill Outline ('Đăng nhập')")}
                   >
                     Đăng nhập
@@ -1253,17 +1258,16 @@ export default function UILabPage() {
                 <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Large Buttons (Hero Section)</span>
                 <div className="flex flex-wrap gap-4">
                   <Button 
-                    variant="large-primary" 
-                    size="large"
-                    className="flex items-center gap-2"
+                    variant="default" 
+                    className="px-8 py-4 h-auto text-base font-black rounded-2xl shadow-lg shadow-blue-500/20 flex items-center gap-2"
                     onClick={() => setMarketingActionLog("Click: Large Primary ('Bắt đầu miễn phí')")}
                   >
                     Bắt đầu miễn phí
                     <span className="material-icons">arrow_forward</span>
                   </Button>
                   <Button 
-                    variant="large-outline" 
-                    size="large"
+                    variant="outline" 
+                    className="px-8 py-4 h-auto text-base font-bold rounded-2xl border-2 border-slate-200 hover:border-slate-300 text-slate-700 bg-white"
                     onClick={() => setMarketingActionLog("Click: Large Outline ('Xem demo')")}
                   >
                     Xem demo
@@ -1276,15 +1280,17 @@ export default function UILabPage() {
                 <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pricing Action Buttons (Thẻ Bảng Giá)</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <Button 
-                    variant="pricing-outline" 
-                    size="pricing"
+                    variant="outline" 
+                    fullWidth
+                    className="py-3 h-auto text-sm border-2 border-primary text-primary hover:bg-primary hover:text-white font-black rounded-xl transition-all shadow-sm"
                     onClick={() => setMarketingActionLog("Click: Pricing Outline ('Đăng ký ngay')")}
                   >
                     Đăng ký ngay
                   </Button>
                   <Button 
-                    variant="pricing-primary" 
-                    size="pricing"
+                    variant="default" 
+                    fullWidth
+                    className="py-3 h-auto text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-none font-black rounded-xl transition-all shadow-md shadow-blue-500/10"
                     onClick={() => setMarketingActionLog("Click: Pricing Primary ('Nâng cấp Pro ngay')")}
                   >
                     Nâng cấp Pro ngay
@@ -1297,8 +1303,9 @@ export default function UILabPage() {
                 <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Floating Action Button (Nút Trợ Giúp AI)</span>
                 <div className="flex items-center gap-4">
                   <Button 
-                    variant="fab" 
-                    size="fab"
+                    variant="default" 
+                    circle
+                    className="w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-none shadow-xl shadow-blue-500/30 hover:scale-110 active:scale-95 transition-all flex items-center justify-center"
                     onClick={() => setMarketingActionLog("Click: FAB Trợ lý AI")}
                   >
                     <span className="material-icons text-3xl">auto_awesome</span>
@@ -1428,9 +1435,9 @@ export default function UILabPage() {
               <h3 className="text-sm font-bold text-slate-700 border-b pb-3">13.2 Sidebar Action Buttons</h3>
               
               <Button 
-                variant="action-primary" 
-                size="action"
-                className="flex items-center justify-center gap-2"
+                variant="default" 
+                fullWidth
+                className="py-3.5 h-auto text-sm rounded-xl font-bold flex items-center justify-center gap-2"
                 onClick={() => setLectureActionLog("Clicked: Tải tài liệu PDF")}
               >
                 <span className="material-symbols-outlined">download</span>
@@ -1438,9 +1445,9 @@ export default function UILabPage() {
               </Button>
 
               <Button 
-                variant="action-secondary" 
-                size="action"
-                className="flex items-center justify-center gap-2"
+                variant="outline-slate" 
+                fullWidth
+                className="py-3.5 h-auto text-sm rounded-xl font-bold bg-slate-100 hover:bg-slate-200 flex items-center justify-center gap-2"
                 onClick={() => setLectureActionLog("Clicked: Lưu bài viết")}
               >
                 <span className="material-symbols-outlined">bookmark_add</span>

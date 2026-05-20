@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { 
   Upload, 
   Plus, 
-  Settings, 
   School, 
   BookOpen, 
   Signal,
@@ -13,7 +12,8 @@ import {
   LayoutDashboard,
   Database,
   FileText,
-  Users
+  Users,
+  FilterX
 } from 'lucide-react';
 
 // UI components
@@ -140,6 +140,13 @@ export default function ExamBankPage() {
     setCurrentPage(1);
   };
 
+  const handleClearFilters = () => {
+    setSelectedGrades([]);
+    setSelectedSubjects([]);
+    setSelectedLevels([]);
+    setCurrentPage(1);
+  };
+
   // Real-time client-side filter computation
   const filteredExams = React.useMemo(() => {
     return mockExams.filter(exam => {
@@ -230,9 +237,6 @@ export default function ExamBankPage() {
               <Plus size={20} />
               Tạo đề thi
             </Button>
-            <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-              <Settings size={24} />
-            </button>
           </div>
         </div>
       </header>
@@ -255,9 +259,9 @@ export default function ExamBankPage() {
               <FileText className="h-4.5 w-4.5 text-primary" />
               <span className="text-xs font-bold">Ngân hàng đề thi</span>
             </a>
-            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="#">
+            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="/dashboard/users">
               <Users className="h-4.5 w-4.5 text-slate-400" />
-              <span className="text-xs font-semibold">Học sinh</span>
+              <span className="text-xs font-semibold">Quản lý người dùng</span>
             </a>
           </div>
 
@@ -313,6 +317,15 @@ export default function ExamBankPage() {
                 ))}
               </div>
             </Collapsible>
+
+            {/* Reset Filters button */}
+            <button 
+              onClick={handleClearFilters}
+              className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-slate-500 hover:text-primary transition-all border border-dashed border-slate-300 hover:border-primary/50 rounded-lg cursor-pointer"
+            >
+              <FilterX size={15} />
+              Xóa bộ lọc
+            </button>
           </div>
         </aside>
 

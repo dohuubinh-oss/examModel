@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  Sparkles, FileDown, Upload, Settings, ListOrdered,
+  Sparkles, FileDown, Upload, ListOrdered,
   SlidersHorizontal, Grid, Lightbulb
 } from 'lucide-react';
 
@@ -48,9 +48,6 @@ export default function ExamCreatorPage() {
               <Upload size={20} />
               Lưu & Xuất bản
             </Button>
-            <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-              <Settings size={24} />
-            </button>
           </div>
         </div>
       </header>

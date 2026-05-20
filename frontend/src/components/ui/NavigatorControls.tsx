@@ -65,7 +65,7 @@ export const NavigatorControls = React.forwardRef<HTMLDivElement, NavigatorContr
               Câu {currentQuestion}
             </span>
             {tagText && (
-              <Badge variant="red-outline" size="sm" className="ml-1 tracking-widest text-[9px] font-black uppercase py-0.5 px-2">
+              <Badge variant="danger" size="sm" className="ml-1 bg-red-100 text-red-600 border border-red-200 tracking-widest text-[9px] font-black uppercase py-0.5 px-2">
                 {tagText}
               </Badge>
             )}

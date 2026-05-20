@@ -4,8 +4,8 @@ import React from 'react';
 import { useRouter } from 'next/navigation';
 import { 
   Upload, Plus, School, BookOpen, Signal, FolderOpen, 
-  Printer, Trash2, Sparkles, Settings, LayoutDashboard, 
-  Database, FileText, Users 
+  Printer, Trash2, Sparkles, LayoutDashboard, 
+  Database, FileText, Users, FilterX
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -43,6 +43,13 @@ export default function QuestionBankPage() {
     setSelectedQs(prev =>
       prev.includes(id) ? prev.filter(qId => qId !== id) : [...prev, id]
     );
+  };
+
+  const handleClearFilters = () => {
+    setSelectedGrades([]);
+    setSelectedSubjects([]);
+    setSelectedLevels([]);
+    setSelectedQs([]);
   };
 
   // Real-time client-side filter computation
@@ -85,9 +92,6 @@ export default function QuestionBankPage() {
               <Plus size={20} />
               Tạo đề thi
             </Button>
-            <button className="p-2 text-slate-400 hover:text-slate-600 transition-colors">
-              <Settings size={24} />
-            </button>
           </div>
         </div>
       </header>
@@ -95,24 +99,24 @@ export default function QuestionBankPage() {
       {/* Workspace container below Header */}
       <div className="flex-1 w-full max-w-[1440px] mx-auto flex overflow-hidden">
         {/* Sidebar Filters */}
-        <aside className="w-72 border-r border-slate-100 overflow-y-auto hidden md:block bg-white p-4 space-y-6">
+        <aside className="w-72 border-r border-slate-100 overflow-y-auto hidden md:block bg-white p-4 space-y-6 shrink-0 h-[calc(100vh-80px)]">
           {/* Page Navigation Menu */}
           <div className="space-y-1">
             <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="#">
               <LayoutDashboard className="h-4.5 w-4.5 text-slate-400" />
               <span className="text-xs font-semibold">Bảng điều khiển</span>
             </a>
-            <a className="flex items-center gap-3 px-3 py-2 bg-primary/5 text-primary rounded-lg transition-all border-r-4 border-primary cursor-pointer" href="#">
+            <a className="flex items-center gap-3 px-3 py-2 bg-primary/5 text-primary rounded-lg transition-all border-r-4 border-primary cursor-pointer" href="/question-bank">
               <Database className="h-4.5 w-4.5 text-primary" />
               <span className="text-xs font-bold">Ngân hàng câu hỏi</span>
             </a>
-            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="#">
+            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="/dashboard/questions/bank">
               <FileText className="h-4.5 w-4.5 text-slate-400" />
               <span className="text-xs font-semibold">Ngân hàng đề thi</span>
             </a>
-            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="#">
+            <a className="flex items-center gap-3 px-3 py-2 text-slate-600 hover:bg-slate-50 rounded-lg transition-all cursor-pointer" href="/dashboard/users">
               <Users className="h-4.5 w-4.5 text-slate-400" />
-              <span className="text-xs font-semibold">Học sinh</span>
+              <span className="text-xs font-semibold">Quản lý người dùng</span>
             </a>
           </div>
 
@@ -165,6 +169,15 @@ export default function QuestionBankPage() {
                 ))}
               </div>
             </Collapsible>
+
+            {/* Reset Filters button */}
+            <button 
+              onClick={handleClearFilters}
+              className="w-full flex items-center justify-center gap-2 py-2 text-xs font-semibold text-slate-500 hover:text-primary transition-all border border-dashed border-slate-300 hover:border-primary/50 rounded-lg cursor-pointer"
+            >
+              <FilterX size={15} />
+              Xóa bộ lọc
+            </button>
           </div>
         </aside>
 

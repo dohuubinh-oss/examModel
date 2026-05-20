@@ -462,8 +462,8 @@ export default function TakeExamPage() {
                       ].map((sym) => (
                         <Button 
                           key={sym.label} 
-                          variant="math" 
-                          size="math" 
+                          variant="ghost" 
+                          className="w-8 h-8 p-0 rounded text-base text-primary font-serif hover:bg-primary/10 transition-colors flex items-center justify-center"
                           onClick={() => handleInsertSymbol(sym.value)}
                           disabled={isPreviewMode}
                         >
@@ -475,14 +475,13 @@ export default function TakeExamPage() {
 
                       {/* Icon chèn công thức từ Bàn phím ảo MathLive (Chỉ chứa Icon, cực kỳ chuyên nghiệp) */}
                       <Button 
-                        variant="math" 
-                        size="math" 
+                        variant="ghost" 
                         onClick={() => {
                           setHybridFormula('');
                           setIsHybridModalOpen(true);
                         }}
                         disabled={isPreviewMode}
-                        className="p-1.5 bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 rounded-lg flex items-center justify-center cursor-pointer group transition-all"
+                        className="h-8 w-8 p-1.5 bg-primary/5 hover:bg-primary/10 text-primary border border-primary/10 rounded-lg flex items-center justify-center cursor-pointer group transition-all"
                         title="Mở bàn phím ảo MathLive chuyên sâu"
                       >
                         <Keyboard className="h-4 w-4 text-primary group-hover:scale-110 transition-transform" />
@@ -491,10 +490,9 @@ export default function TakeExamPage() {
 
                     {/* Nút Xem trước / Soạn thảo chuyên nghiệp dạng Eye / PenTool */}
                     <Button
-                      variant="math"
-                      size="math"
+                      variant="ghost"
                       onClick={() => setIsPreviewMode(!isPreviewMode)}
-                      className={`p-1.5 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
+                      className={`h-8 w-8 p-1.5 rounded-lg border flex items-center justify-center cursor-pointer transition-all ${
                         isPreviewMode 
                           ? 'bg-primary text-white border-primary hover:bg-primary/95 shadow-sm shadow-primary/15 animate-all'
                           : 'bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 border-slate-200 dark:border-slate-700'

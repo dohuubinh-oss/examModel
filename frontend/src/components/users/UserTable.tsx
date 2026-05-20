@@ -326,37 +326,39 @@ export const UserTable: React.FC<UserTableProps> = ({
   return (
     <div className={cn("w-full", className)} {...props}>
       {/* Table Container Wrapper */}
-      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden min-w-[1000px]">
-        <table className="w-full text-left border-collapse">
-          <thead>
-            <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
-              <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Họ tên & Avatar</th>
-              <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Vai trò</th>
-              <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Khối lớp</th>
-              <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ngày tham gia</th>
-              <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trạng thái</th>
-              <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Hành động</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
-            {users.map((user) => (
-              <UserRow
-                key={user.id}
-                user={user}
-                onResetPassword={onResetPassword}
-                onEdit={onEdit}
-                onDelete={onDelete}
-              />
-            ))}
-            {users.length === 0 && (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-400 dark:text-slate-500">
-                  Không tìm thấy người dùng nào phù hợp.
-                </td>
+      <div className="bg-white dark:bg-slate-900 rounded-xl shadow-sm border border-slate-200 dark:border-slate-800 overflow-hidden w-full">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse min-w-[1000px]">
+            <thead>
+              <tr className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-100 dark:border-slate-800">
+                <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Họ tên</th>
+                <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Vai trò</th>
+                <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Khối lớp</th>
+                <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Ngày tham gia</th>
+                <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider">Trạng thái</th>
+                <th className="px-6 py-4 font-semibold text-xs text-slate-500 dark:text-slate-400 uppercase tracking-wider text-right">Hành động</th>
               </tr>
-            )}
-          </tbody>
-        </table>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+              {users.map((user) => (
+                <UserRow
+                  key={user.id}
+                  user={user}
+                  onResetPassword={onResetPassword}
+                  onEdit={onEdit}
+                  onDelete={onDelete}
+                />
+              ))}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-400 dark:text-slate-500">
+                    Không tìm thấy người dùng nào phù hợp.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Pagination Controls */}

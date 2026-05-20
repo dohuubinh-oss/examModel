@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Badge } from '@/components/ui/Badge';
+import { Tag } from '@/components/ui/Tag';
 import { Textarea } from '@/components/ui/Textarea';
 import { Editor } from '@/components/ui/Editor';
 import { Card, CardContent } from '@/components/ui/Card';
@@ -230,7 +231,7 @@ export default function SmartQuestionCreatorPage() {
             </button>
             <div className="flex items-center gap-3">
               <h1 className="text-lg font-bold leading-tight">Smart Question Creator</h1>
-              <Badge variant="red-outline">Câu hỏi chùm</Badge>
+              <Badge variant="danger" className="bg-red-100 text-red-600 border border-red-200">Câu hỏi chùm</Badge>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -276,7 +277,7 @@ export default function SmartQuestionCreatorPage() {
                 <div className="flex items-center gap-2">
                   <Code className="text-primary text-xl" />
                   <h2 className="text-xs font-black text-slate-800 uppercase tracking-widest">Nhập nhanh bằng JSON</h2>
-                  <Badge variant="blue-filled">Thông minh</Badge>
+                  <Badge variant="primary" className="bg-blue-100 text-primary border-transparent">Thông minh</Badge>
                 </div>
               </div>
               <div className="relative pl-2">
@@ -321,7 +322,7 @@ export default function SmartQuestionCreatorPage() {
                 
                 <div className="px-4 py-1 flex items-center gap-2 border-x border-slate-100 select-none">
                   <span className="text-xs font-black text-primary uppercase tracking-widest">Câu {currentIndex + 1}</span>
-                  <Badge variant="red-outline" className="ml-1">Câu hỏi chùm</Badge>
+                  <Badge variant="danger" className="ml-1 bg-red-100 text-red-600 border border-red-200">Câu hỏi chùm</Badge>
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">/ {questions.length}</span>
                 </div>
 
@@ -614,8 +615,9 @@ export default function SmartQuestionCreatorPage() {
           <div className="flex justify-center pb-8">
             <Button 
               onClick={handleAddNewQuestion}
-              variant="circle"
-              size="circle"
+              variant="outline-slate"
+              circle
+              className="w-14 h-14 bg-white text-primary shadow-lg border border-slate-200 hover:scale-110 active:scale-95 group transition-all"
               title="Thêm câu hỏi nhỏ mới"
             >
               <Plus size={28} className="group-hover:rotate-90 transition-transform duration-300" />
@@ -680,7 +682,11 @@ export default function SmartQuestionCreatorPage() {
                       <Button
                         key={lvl}
                         type="button"
-                        variant={activeQuestion.level === lvl ? 'difficulty-active' : 'difficulty-inactive'}
+                        variant="outline-slate"
+                        className={activeQuestion.level === lvl 
+                          ? "bg-blue-50 text-primary border-blue-500/30 hover:bg-blue-50 shadow-sm text-xs font-black py-4 border rounded-xl"
+                          : "bg-white text-slate-500 hover:text-slate-700 hover:bg-slate-50/50 border border-slate-200 text-xs font-bold py-4 rounded-xl shadow-sm"
+                        }
                         onClick={() => updateActiveQuestion({ level: lvl })}
                       >
                         {lvl}
@@ -694,21 +700,14 @@ export default function SmartQuestionCreatorPage() {
                   <label className="text-xs font-semibold text-slate-500 ml-1 select-none">Thẻ (Tags)</label>
                   <div className="flex flex-wrap gap-2 mb-4">
                     {activeQuestion.tags.map((tag) => (
-                      <span 
+                      <Tag
                         key={tag}
-                        className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/10 text-primary text-[10px] font-black rounded-full uppercase tracking-widest select-none"
-                      >
-                        {tag}
-                        <button 
-                          onClick={() => {
-                            const filteredTags = activeQuestion.tags.filter(t => t !== tag);
-                            updateActiveQuestion({ tags: filteredTags });
-                          }}
-                          className="hover:text-blue-800 transition-colors cursor-pointer"
-                        >
-                          <X size={12} />
-                        </button>
-                      </span>
+                        label={tag}
+                        onRemove={() => {
+                          const filteredTags = activeQuestion.tags.filter(t => t !== tag);
+                          updateActiveQuestion({ tags: filteredTags });
+                        }}
+                      />
                     ))}
                   </div>
                   <div className="relative">
