@@ -61,6 +61,9 @@ func TestTestResultMigrationAndCascade(t *testing.T) {
 			IsCorrect:              false,
 			Point:                  0.0,
 			HandwrittenSolutionUrl: "https://example.com/essay_sol.png",
+			TeacherComment:         "Lời giải tự luận tốt, hình vẽ rõ ràng.",
+			AnnotationsData:        `{"strokes": [{"color": "red", "points": [10, 20, 30]}]}`,
+			GradedBy:               "GV. Nguyễn Văn A",
 		},
 	}
 
@@ -99,6 +102,18 @@ func TestTestResultMigrationAndCascade(t *testing.T) {
 
 	if fetchedResult.Answers[1].HandwrittenSolutionUrl != "https://example.com/essay_sol.png" {
 		t.Errorf("expected second answer to contain handwritten solution URL, got %q", fetchedResult.Answers[1].HandwrittenSolutionUrl)
+	}
+
+	if fetchedResult.Answers[1].TeacherComment != "Lời giải tự luận tốt, hình vẽ rõ ràng." {
+		t.Errorf("expected second answer to contain TeacherComment, got %q", fetchedResult.Answers[1].TeacherComment)
+	}
+
+	if fetchedResult.Answers[1].AnnotationsData != `{"strokes": [{"color": "red", "points": [10, 20, 30]}]}` {
+		t.Errorf("expected second answer to contain AnnotationsData, got %q", fetchedResult.Answers[1].AnnotationsData)
+	}
+
+	if fetchedResult.Answers[1].GradedBy != "GV. Nguyễn Văn A" {
+		t.Errorf("expected second answer to contain GradedBy, got %q", fetchedResult.Answers[1].GradedBy)
 	}
 
 	// 6. Test Cascade Delete on Exam deletion

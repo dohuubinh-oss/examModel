@@ -35,7 +35,7 @@ func main() {
 	fmt.Println("Successfully connected to PostgreSQL")
 
 	// Auto-migrate schema
-	err = db.AutoMigrate(&models.Question{}, &models.User{}, &models.Exam{}, &models.ExamQuestion{}, &models.TestResult{})
+	err = db.AutoMigrate(&models.Topic{}, &models.Question{}, &models.User{}, &models.Exam{}, &models.ExamQuestion{}, &models.TestResult{})
 	if err != nil {
 		log.Fatalf("Failed to run database auto-migration: %v", err)
 	}

@@ -12,6 +12,11 @@ type StudentAnswer struct {
 	IsCorrect              bool    `json:"is_correct"`
 	Point                  float64 `json:"point"`
 	HandwrittenSolutionUrl string  `json:"handwritten_solution_url,omitempty"`
+	
+	// New fields for grading annotation
+	TeacherComment         string  `json:"teacher_comment,omitempty"`
+	AnnotationsData        string  `json:"annotations_data,omitempty"` // Serialized JSON/SVG drawing strokes
+	GradedBy               string  `json:"graded_by,omitempty"`
 }
 
 type TestResult struct {

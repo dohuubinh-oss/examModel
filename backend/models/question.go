@@ -21,6 +21,8 @@ type Question struct {
 	Type             string         `gorm:"type:varchar(50);not null;check:type IN ('Trắc nghiệm','Tự luận')" json:"type"` // "Trắc nghiệm" or "Tự luận"
 	Grade            int            `gorm:"index:idx_grade_topic;type:integer;not null;check:grade BETWEEN 5 AND 10" json:"grade"` // 5, 6, 7, 8, 9, 10
 	Topic            string         `gorm:"index:idx_grade_topic;type:varchar(255);not null" json:"topic"`
+	TopicID          *uint          `gorm:"index" json:"topic_id,omitempty"`
+	TopicRel         *Topic         `gorm:"foreignKey:TopicID;constraint:OnDelete:SET NULL;" json:"topic_rel,omitempty"`
 	
 	// Educational settings
 	DifficultyLevel  string         `gorm:"index;type:varchar(50);not null" json:"difficulty_level"` // "Nhận biết", "Thông hiểu", "Vận dụng", "Vận dụng cao"
