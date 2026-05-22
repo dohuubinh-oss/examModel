@@ -11,7 +11,7 @@ function textToHtmlWithMath(text: string) {
     const encoded = latex.replace(/"/g, '&quot;')
     return `<span data-type="math" data-latex="${encoded}"></span>`
   })
-  
+
   return html.split('\n').map(line => `<p>${line}</p>`).join('')
 }
 
@@ -56,12 +56,18 @@ export function TiptapEditor({ value, onValueChange, placeholder = "Nhập nội
       if (currentText !== value) {
         // Prevent cursor jump by preserving selection if we are focused
         const { from, to } = editor.state.selection
-        editor.commands.setContent(textToHtmlWithMath(value))
-        try {
-          editor.commands.setTextSelection({ from, to })
-        } catch (e) {
-          // ignore if out of bounds
-        }
+        
+        // Defer setContent to avoid React flushSync error in lifecycle
+        setTimeout(() => {
+          if (!editor.isDestroyed) {
+            editor.commands.setContent(textToHtmlWithMath(value))
+            try {
+              editor.commands.setTextSelection({ from, to })
+            } catch (e) {
+              // ignore if out of bounds
+            }
+          }
+        }, 0)
       }
     }
   }, [value, editor])

@@ -211,7 +211,17 @@ export default function SmartQuestionCreatorPage() {
       return;
     }
     try {
-      const parsed = JSON.parse(jsonInput);
+      // Clean up common LLM unescaped LaTeX issues in JSON strings before parsing
+      // LLMs often output \frac instead of \\frac, which JSON.parse interprets as form feed (\f)
+      const cleanedInput = jsonInput
+        .replace(/(?<!\\)\\f/g, '\\\\f') // \frac -> \\frac
+        .replace(/(?<!\\)\\b/g, '\\\\b') // \begin -> \\begin
+        .replace(/(?<!\\)\\v/g, '\\\\v') // \vec -> \\vec
+        .replace(/(?<!\\)\\t/g, '\\\\t') // \text -> \\text
+        .replace(/(?<!\\)\\r/g, '\\\\r') // \right -> \\right
+        .replace(/(?<!\\)\\n/g, '\\\\n'); // \nabla -> \\nabla
+
+      const parsed = JSON.parse(cleanedInput);
       if (!Array.isArray(parsed)) {
         alert("Dữ liệu JSON phải là một mảng (Array) các nhóm câu hỏi!");
         return;
