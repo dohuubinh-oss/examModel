@@ -320,7 +320,7 @@ export default function UILabPage() {
           <Button variant="ghost-danger" size="icon" title="Xóa">
             <Trash2 size={18} />
           </Button>
-          
+
           <div className="w-full mt-4 flex items-center gap-4 border-t pt-4 border-slate-100">
             <span className="text-sm font-semibold text-slate-500 w-24">Sizes:</span>
             <Button variant="default" size="sm">Small (sm)</Button>
@@ -365,7 +365,7 @@ export default function UILabPage() {
         <div className="flex flex-wrap gap-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
           <Badge variant="default" size="md">Đã kiểm tra 48/50</Badge>
           <Badge variant="outline" size="md">A</Badge>
-          
+
           <div className="w-full mt-4 pt-4 border-t border-slate-100 flex flex-wrap gap-4 items-center">
             <span className="text-sm font-semibold text-slate-500 w-24">Tags (sm):</span>
             <Badge variant="primary" size="sm">LỚP 9 - GIẢI TÍCH</Badge>
@@ -439,10 +439,10 @@ export default function UILabPage() {
                 {selectedQs.includes(mockQuestions[0].id) ? 'Bỏ chọn' : 'Chọn câu'}
               </Button>
             </div>
-            <QuestionCard 
-              question={mockQuestions[0]} 
-              mode="teacher" 
-              onRegenerate={(qId) => console.log('Regenerated question: ', qId)} 
+            <QuestionCard
+              question={mockQuestions[0]}
+              mode="teacher"
+              onRegenerate={(qId) => console.log('Regenerated question: ', qId)}
             />
           </div>
           <div className="space-y-2">
@@ -456,9 +456,9 @@ export default function UILabPage() {
                 {selectedQs.includes(mockQuestions[1].id) ? 'Bỏ chọn' : 'Chọn câu'}
               </Button>
             </div>
-            <QuestionCard 
-              question={mockQuestions[1]} 
-              mode="student" 
+            <QuestionCard
+              question={mockQuestions[1]}
+              mode="student"
               selectedOptionId={selectedLabOpt}
               onOptionSelect={(qId, optId) => setSelectedLabOpt(optId)}
             />
@@ -496,7 +496,7 @@ export default function UILabPage() {
           <div className="text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-3 rounded-lg text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span><strong>Trạng thái tương tác:</strong> {actionLog}</span>
             {actionLog !== 'Rê chuột lên dòng để thao tác hoặc đổi theme!' && (
-              <button 
+              <button
                 onClick={() => setActionLog('Rê chuột lên dòng để thao tác hoặc đổi theme!')}
                 className="text-[10px] uppercase font-bold text-blue-600 hover:underline dark:text-blue-400"
               >
@@ -535,7 +535,7 @@ export default function UILabPage() {
           <div className="text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-3 rounded-lg text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span><strong>Nhật ký thao tác bảng:</strong> {userActionLog}</span>
             {userActionLog !== 'Click đổi mật khẩu, chỉnh sửa hoặc xóa dòng để test log!' && (
-              <button 
+              <button
                 onClick={() => setUserActionLog('Click đổi mật khẩu, chỉnh sửa hoặc xóa dòng để test log!')}
                 className="text-[10px] uppercase font-bold text-blue-600 hover:underline dark:text-blue-400"
               >
@@ -572,7 +572,7 @@ export default function UILabPage() {
           <div className="text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-3 rounded-lg text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span><strong>Nhật ký tương tác Atoms:</strong> {loginActionLog}</span>
             {loginActionLog !== 'Thực hiện tương tác với các atoms đăng nhập để xem nhật ký!' && (
-              <button 
+              <button
                 onClick={() => setLoginActionLog('Thực hiện tương tác với các atoms đăng nhập để xem nhật ký!')}
                 className="text-[10px] uppercase font-bold text-blue-600 hover:underline dark:text-blue-400"
               >
@@ -584,30 +584,30 @@ export default function UILabPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div className="space-y-4">
               <h3 className="text-sm font-bold text-slate-700">Inputs & PasswordInputs (Login style)</h3>
-              
+
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-700">Họ và Tên (variant="login")</label>
-                <Input 
-                  variant="login" 
-                  placeholder="Nhập họ và tên của bạn" 
+                <Input
+                  variant="login"
+                  placeholder="Nhập họ và tên của bạn"
                   onChange={(e) => setLoginActionLog(`Tên thay đổi: "${e.target.value}"`)}
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-700">Số điện thoại hoặc Email (variant="login")</label>
-                <Input 
-                  variant="login" 
-                  placeholder="Nhập email hoặc số điện thoại" 
+                <Input
+                  variant="login"
+                  placeholder="Nhập email hoặc số điện thoại"
                   onChange={(e) => setLoginActionLog(`Identity thay đổi: "${e.target.value}"`)}
                 />
               </div>
 
               <div className="space-y-2">
                 <label className="block text-xs font-semibold text-slate-700">Mật khẩu (PasswordInput variant="login")</label>
-                <PasswordInput 
-                  variant="login" 
-                  placeholder="••••••••" 
+                <PasswordInput
+                  variant="login"
+                  placeholder="••••••••"
                   onChange={(e) => setLoginActionLog(`Mật khẩu thay đổi: (độ dài ${e.target.value.length})`)}
                 />
               </div>
@@ -619,7 +619,7 @@ export default function UILabPage() {
                 <div className="space-y-4">
                   <div className="space-y-2">
                     <label className="block text-xs font-semibold text-slate-400">Nút Đăng nhập chính (size="lg" + shadow)</label>
-                    <Button 
+                    <Button
                       variant="default"
                       className="w-full font-bold py-[1rem] h-auto shadow-lg shadow-primary/20 text-[1.125rem]"
                       onClick={() => setLoginActionLog('Đã Click nút [Đăng nhập]')}
@@ -630,7 +630,7 @@ export default function UILabPage() {
 
                   <div className="space-y-2">
                     <label className="block text-xs font-semibold text-slate-400">Nút Đăng nhập qua mạng xã hội (Google Style)</label>
-                    <Button 
+                    <Button
                       variant="outline-slate"
                       className="w-full flex items-center justify-center gap-[0.75rem] px-[1rem] py-[0.875rem] h-auto rounded-lg bg-white border border-slate-200 hover:bg-slate-50 transition-all duration-300 group"
                       onClick={() => setLoginActionLog('Đã Click [Google Social Login]')}
@@ -662,7 +662,7 @@ export default function UILabPage() {
           <div className="text-xs bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-800 p-3 rounded-lg text-slate-500 dark:text-slate-400 flex items-center justify-between">
             <span><strong>Nhật ký tương tác Atoms:</strong> {questionActionLog}</span>
             {questionActionLog !== 'Thực hiện tương tác với các atoms Smart Question Creator để xem nhật ký!' && (
-              <button 
+              <button
                 onClick={() => setQuestionActionLog('Thực hiện tương tác với các atoms Smart Question Creator để xem nhật ký!')}
                 className="text-[10px] uppercase font-bold text-blue-600 hover:underline dark:text-blue-400"
               >
@@ -711,7 +711,7 @@ export default function UILabPage() {
                     ))}
                   </div>
                   <div className="relative max-w-[280px] pt-1">
-                    <Input 
+                    <Input
                       placeholder="Thêm thẻ mới..."
                       value={newTagInput}
                       onChange={(e) => setNewTagInput(e.target.value)}
@@ -726,7 +726,7 @@ export default function UILabPage() {
                       }}
                       className="py-2 pl-3 pr-8 text-xs font-medium"
                     />
-                    <span 
+                    <span
                       onClick={() => {
                         if (newTagInput.trim()) {
                           if (!tags.includes(newTagInput.trim())) {
@@ -752,7 +752,7 @@ export default function UILabPage() {
                     <Button
                       key={diff}
                       variant="outline-slate"
-                      className={activeDifficulty === diff 
+                      className={activeDifficulty === diff
                         ? "bg-blue-50 text-primary border-blue-500/30 hover:bg-blue-50 shadow-sm text-xs font-black py-4 border rounded-xl"
                         : "bg-white text-slate-500 hover:text-slate-700 hover:bg-slate-50/50 border border-slate-200 text-xs font-bold py-4 rounded-xl shadow-sm"
                       }
@@ -771,7 +771,7 @@ export default function UILabPage() {
               <div className="space-y-2">
                 <span className="block text-xs font-semibold text-slate-500">Nút thêm tròn (Circular Add Button)</span>
                 <div className="flex items-center gap-4">
-                  <Button 
+                  <Button
                     variant="outline-slate"
                     circle
                     className="w-14 h-14 bg-white text-primary shadow-lg border border-slate-200 hover:scale-110 active:scale-95 group transition-all"
@@ -791,7 +791,7 @@ export default function UILabPage() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-bold text-slate-700">Atomic Textarea (Mono variant)</h3>
-                  <button 
+                  <button
                     onClick={() => {
                       try {
                         JSON.parse(jsonText);
@@ -807,7 +807,7 @@ export default function UILabPage() {
                     Xử lý JSON
                   </button>
                 </div>
-                <Textarea 
+                <Textarea
                   variant="mono"
                   rows={4}
                   value={jsonText}
@@ -824,7 +824,7 @@ export default function UILabPage() {
                     {editorValue.replace(/<[^>]*>/g, '').length} KÝ TỰ
                   </span>
                 </div>
-                <Editor 
+                <Editor
                   placeholder="Nhập nội dung câu hỏi hoặc công thức toán học..."
                   value={editorValue}
                   onValueChange={(content) => {
@@ -876,7 +876,7 @@ export default function UILabPage() {
           <span className="bg-primary/10 text-primary p-2 rounded-lg">10</span>
           Exam Interface Atoms (Giao diện Làm Bài Thi)
         </h2>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-white p-6 rounded-xl border border-slate-200 space-y-6">
             <h3 className="font-semibold text-slate-700">TimerBadge & Progress</h3>
@@ -893,7 +893,7 @@ export default function UILabPage() {
                 <Progress value={80} />
               </div>
             </div>
-            
+
             <h3 className="font-semibold text-slate-700 pt-4">MathButton (Variant math)</h3>
             <div className="flex flex-wrap gap-2 bg-slate-50 p-4 border border-slate-200 rounded-lg">
               <Button variant="ghost" className="font-serif w-8 h-8 p-0 text-base rounded">√</Button>
@@ -934,13 +934,13 @@ export default function UILabPage() {
         {/* Standalone Atoms Showcase */}
         <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
           <h3 className="text-sm font-bold text-slate-700">11.1 Các Component Atoms Mới Trích Xuất (Mẫu chuẩn)</h3>
-          
+
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
             {/* UploadArea Showcase */}
             <div className="space-y-2">
               <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">UploadArea (Atom kéo thả ảnh)</span>
-              <UploadArea 
-                label="Kéo thả hoặc Tải ảnh" 
+              <UploadArea
+                label="Kéo thả hoặc Tải ảnh"
                 minHeight="min-h-[160px]"
                 onFileSelect={(file) => setQuestionActionLog(`[UploadArea Showcase] Tệp đã chọn: ${file ? file.name : 'Không có'}`)}
               />
@@ -950,16 +950,16 @@ export default function UILabPage() {
             <div className="space-y-2 flex flex-col justify-between">
               <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">OptionRadio (Lựa chọn trắc nghiệm)</span>
               <div className="space-y-3">
-                <OptionRadio 
-                  letter="A" 
-                  value="m = 3 (Checked)" 
-                  checked={true} 
+                <OptionRadio
+                  letter="A"
+                  value="m = 3 (Checked)"
+                  checked={true}
                   onChange={(val) => setQuestionActionLog(`[OptionRadio Showcase A] Checked: ${val}`)}
                 />
-                <OptionRadio 
-                  letter="B" 
-                  value="m = 0 (Unchecked)" 
-                  checked={false} 
+                <OptionRadio
+                  letter="B"
+                  value="m = 0 (Unchecked)"
+                  checked={false}
                   onChange={(val) => setQuestionActionLog(`[OptionRadio Showcase B] Checked: ${val}`)}
                 />
               </div>
@@ -968,9 +968,9 @@ export default function UILabPage() {
             {/* NavigatorControls Showcase */}
             <div className="space-y-2 flex flex-col justify-center">
               <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">NavigatorControls (Thanh điều hướng chùm)</span>
-              <NavigatorControls 
-                currentQuestion={1} 
-                totalQuestions={12} 
+              <NavigatorControls
+                currentQuestion={1}
+                totalQuestions={12}
                 onFirst={() => setQuestionActionLog('[Navigator Showcase] Về đầu')}
                 onPrev={() => setQuestionActionLog('[Navigator Showcase] Về trước')}
                 onNext={() => setQuestionActionLog('[Navigator Showcase] Sang sau')}
@@ -994,10 +994,10 @@ export default function UILabPage() {
 
           {/* Simulated Workspace */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start bg-slate-50/50 p-6 rounded-3xl border border-slate-200 shadow-inner">
-            
+
             {/* Main Area: col-span-8 */}
             <div className="lg:col-span-8 space-y-6">
-              
+
               {/* Quick JSON parser card */}
               <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
                 <div className="flex items-center justify-between">
@@ -1008,15 +1008,15 @@ export default function UILabPage() {
                   </div>
                 </div>
                 <div className="relative">
-                  <Textarea 
-                    variant="mono" 
-                    rows={3} 
+                  <Textarea
+                    variant="mono"
+                    rows={3}
                     className="pb-12"
                     defaultValue={jsonText}
                     onChange={(e) => setJsonText(e.target.value)}
                     placeholder='[{"question": "...", "options": [...], "answer": "A"}, ...]'
                   />
-                  <Button 
+                  <Button
                     variant="default"
                     size="sm"
                     className="absolute bottom-3 right-3 shadow-md shadow-primary/30 text-xs py-2 px-4"
@@ -1052,7 +1052,7 @@ export default function UILabPage() {
               </div>
 
               {/* Navigator pagination */}
-              <NavigatorControls 
+              <NavigatorControls
                 currentQuestion={bulkCurrentQ}
                 totalQuestions={bulkQuestions.length}
                 onFirst={() => setBulkCurrentQ(1)}
@@ -1071,19 +1071,19 @@ export default function UILabPage() {
                   </div>
                   <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Hỗ trợ LaTeX ($...$)</span>
                 </div>
-                
+
                 <div className="p-6 space-y-6">
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
                     {/* Left: upload area */}
-                    <UploadArea 
+                    <UploadArea
                       label="Kéo thả hoặc Tải ảnh câu hỏi"
                       minHeight="min-h-[220px]"
                       onFileSelect={(file) => setQuestionActionLog(`[Simulator Q${bulkCurrentQ}] File ảnh câu hỏi: ${file ? file.name : 'Đã xóa'}`)}
                     />
-                    
+
                     {/* Right: text editing */}
                     <div className="flex flex-col">
-                      <Editor 
+                      <Editor
                         value={bulkQuestions[bulkCurrentQ - 1]?.text || ''}
                         onValueChange={(content) => {
                           setBulkQuestions(prev => prev.map((q, idx) => {
@@ -1112,7 +1112,7 @@ export default function UILabPage() {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {['A', 'B', 'C', 'D'].map((letter) => (
-                    <OptionRadio 
+                    <OptionRadio
                       key={letter}
                       letter={letter}
                       value={bulkQuestions[bulkCurrentQ - 1]?.options[letter] || ''}
@@ -1126,7 +1126,7 @@ export default function UILabPage() {
 
               {/* Circular plus button to add small question */}
               <div className="flex justify-center">
-                <Button 
+                <Button
                   variant="outline-slate"
                   circle
                   className="w-14 h-14 bg-white text-primary shadow-lg border border-slate-200 hover:scale-110 active:scale-95 group transition-all"
@@ -1141,7 +1141,7 @@ export default function UILabPage() {
 
             {/* Sidebar Configurations: col-span-4 */}
             <div className="lg:col-span-4 space-y-6">
-              
+
               {/* Question Config Card */}
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
                 <h4 className="text-xs font-bold text-slate-900 uppercase tracking-widest border-b pb-3 flex items-center gap-2">
@@ -1179,7 +1179,7 @@ export default function UILabPage() {
                         <Button
                           key={diff}
                           variant="outline-slate"
-                          className={bulkQuestions[bulkCurrentQ - 1]?.difficulty === diff 
+                          className={bulkQuestions[bulkCurrentQ - 1]?.difficulty === diff
                             ? "bg-blue-50 text-primary border-blue-500/30 hover:bg-blue-50 shadow-sm font-black border rounded-xl py-3 text-[9px]"
                             : "bg-white text-slate-500 hover:text-slate-700 hover:bg-slate-50/50 border border-slate-200 font-bold rounded-xl shadow-sm py-3 text-[9px]"
                           }
@@ -1228,22 +1228,22 @@ export default function UILabPage() {
           {/* Column 1: Buttons Showcase */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
             <h3 className="text-sm font-bold text-slate-700 border-b pb-3">12.1 Các Loại Button Atoms Mới</h3>
-            
+
             <div className="space-y-4">
               {/* Pill Navigation Buttons */}
               <div className="space-y-2">
                 <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pill Buttons (Thanh Điều Hướng)</span>
                 <div className="flex flex-wrap gap-4">
-                  <Button 
-                    variant="default" 
+                  <Button
+                    variant="default"
                     pill
                     className="px-6 py-2.5 h-auto text-sm"
                     onClick={() => setMarketingActionLog("Click: Pill Primary ('Học ngay')")}
                   >
                     Học ngay
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     pill
                     className="px-6 py-2.5 h-auto text-sm border-2 border-primary text-primary font-black hover:bg-primary hover:text-white bg-transparent"
                     onClick={() => setMarketingActionLog("Click: Pill Outline ('Đăng nhập')")}
@@ -1257,16 +1257,16 @@ export default function UILabPage() {
               <div className="space-y-2 pt-2">
                 <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Large Buttons (Hero Section)</span>
                 <div className="flex flex-wrap gap-4">
-                  <Button 
-                    variant="default" 
+                  <Button
+                    variant="default"
                     className="px-8 py-4 h-auto text-base font-black rounded-2xl shadow-lg shadow-blue-500/20 flex items-center gap-2"
                     onClick={() => setMarketingActionLog("Click: Large Primary ('Bắt đầu miễn phí')")}
                   >
                     Bắt đầu miễn phí
                     <span className="material-icons">arrow_forward</span>
                   </Button>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="px-8 py-4 h-auto text-base font-bold rounded-2xl border-2 border-slate-200 hover:border-slate-300 text-slate-700 bg-white"
                     onClick={() => setMarketingActionLog("Click: Large Outline ('Xem demo')")}
                   >
@@ -1279,16 +1279,16 @@ export default function UILabPage() {
               <div className="space-y-2 pt-2">
                 <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Pricing Action Buttons (Thẻ Bảng Giá)</span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     fullWidth
                     className="py-3 h-auto text-sm border-2 border-primary text-primary hover:bg-primary hover:text-white font-black rounded-xl transition-all shadow-sm"
                     onClick={() => setMarketingActionLog("Click: Pricing Outline ('Đăng ký ngay')")}
                   >
                     Đăng ký ngay
                   </Button>
-                  <Button 
-                    variant="default" 
+                  <Button
+                    variant="default"
                     fullWidth
                     className="py-3 h-auto text-sm bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 border-none font-black rounded-xl transition-all shadow-md shadow-blue-500/10"
                     onClick={() => setMarketingActionLog("Click: Pricing Primary ('Nâng cấp Pro ngay')")}
@@ -1302,8 +1302,8 @@ export default function UILabPage() {
               <div className="space-y-2 pt-2">
                 <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Floating Action Button (Nút Trợ Giúp AI)</span>
                 <div className="flex items-center gap-4">
-                  <Button 
-                    variant="default" 
+                  <Button
+                    variant="default"
                     circle
                     className="w-14 h-14 bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-none shadow-xl shadow-blue-500/30 hover:scale-110 active:scale-95 transition-all flex items-center justify-center"
                     onClick={() => setMarketingActionLog("Click: FAB Trợ lý AI")}
@@ -1325,7 +1325,7 @@ export default function UILabPage() {
               <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">Switch (Billing Toggle: Hàng tháng / Hàng năm)</span>
               <div className="flex items-center gap-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <span className={cn("text-xs font-bold transition-all", !marketingSwitchChecked ? "text-primary" : "text-slate-400 uppercase")}>Hàng tháng</span>
-                <Switch 
+                <Switch
                   checked={marketingSwitchChecked}
                   onChange={(checked) => {
                     setMarketingSwitchChecked(checked);
@@ -1342,7 +1342,7 @@ export default function UILabPage() {
             <div className="space-y-3">
               <span className="block text-xs font-bold text-slate-500 uppercase tracking-wide">AvatarGroup (Danh sách học sinh tin dùng)</span>
               <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                <AvatarGroup 
+                <AvatarGroup
                   avatars={[
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuCkg2j1eQxe8m9S3Yhptdh96e6OUu_RZ-rwmBhDF5piZGVUws4S2-y8OF4EikVbhklBkU9IB6_9GrPb1F8AOblKwxq1FGUtKjOydvTMfYkLsYVL5Ape6mJ27plYyHP47fJpwLrAgtbxy-AcoLBDCdh8xGSsrd7xTjlV0zcF9QaEaTtotCSe8Cy5J_XO3WCCTnMNKNQVrXIEsl5uhPYsnSmcVzYxjUjCdwkDZNfXOkSV9HTD8QvdaxO63ZhfE0ZV4GcHm8pxX3tMEMZm",
                     "https://lh3.googleusercontent.com/aida-public/AB6AXuCLLhO8u-iBzfHpy648Tt1cNuk7COYKl_yWeI7H15Y31w-DcTYEKRakeXWZPldOxjwFG6-H0FYqimLhGecYjcHLbxvGP1fnwbrHHM45u-7WeBDYBckxr5GSkWUFxLoS7nzWogEP1Ni45cd8_g-alCnQuUDJ6EnB7uPUZkEFT3h1qj10GKXTuylWvrQPEwIuX-g13g_x2YffKW2IwtKt2rI3gPnTIvbqOiTERMeO10H7Rb429QwrhIm1DlRzauvGXW037bu7r-dOYBMn",
@@ -1389,14 +1389,14 @@ export default function UILabPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* Column 1: StepItem (Timeline) Showcase (Col Span 7) */}
           <div className="lg:col-span-7 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-6">
             <h3 className="text-sm font-bold text-slate-700 border-b pb-3">13.1 StepItem Atoms (Quy trình giải mẫu)</h3>
-            
+
             <div className="space-y-2">
-              <StepItem 
-                stepNumber={1} 
+              <StepItem
+                stepNumber={1}
                 title="Tính diện tích đáy B (Tam giác ABC)"
                 onClick={() => setLectureActionLog("Clicked: Bước 1 (Tính diện tích đáy)")}
                 className="cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors"
@@ -1405,8 +1405,8 @@ export default function UILabPage() {
                 <p className="mt-2 font-bold text-primary latex-font">B = S_ABC = (a²√3) / 4</p>
               </StepItem>
 
-              <StepItem 
-                stepNumber={2} 
+              <StepItem
+                stepNumber={2}
                 title="Xác định chiều cao h"
                 onClick={() => setLectureActionLog("Clicked: Bước 2 (Xác định chiều cao)")}
                 className="cursor-pointer hover:bg-slate-50 p-2 rounded-lg transition-colors"
@@ -1414,8 +1414,8 @@ export default function UILabPage() {
                 <p>Theo giả thiết SA ⊥ (ABC), suy ra chiều cao h = SA = a√3.</p>
               </StepItem>
 
-              <StepItem 
-                stepNumber={3} 
+              <StepItem
+                stepNumber={3}
                 title="Áp dụng công thức tính thể tích"
                 isLast
                 onClick={() => setLectureActionLog("Clicked: Bước 3 (Áp dụng công thức)")}
@@ -1429,13 +1429,13 @@ export default function UILabPage() {
 
           {/* Column 2: Side Cards, Badges & Action Buttons (Col Span 5) */}
           <div className="lg:col-span-5 space-y-6">
-            
+
             {/* Action Buttons */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-slate-700 border-b pb-3">13.2 Sidebar Action Buttons</h3>
-              
-              <Button 
-                variant="default" 
+
+              <Button
+                variant="default"
                 fullWidth
                 className="py-3.5 h-auto text-sm rounded-xl font-bold flex items-center justify-center gap-2"
                 onClick={() => setLectureActionLog("Clicked: Tải tài liệu PDF")}
@@ -1444,8 +1444,8 @@ export default function UILabPage() {
                 Tải tài liệu PDF
               </Button>
 
-              <Button 
-                variant="outline-slate" 
+              <Button
+                variant="outline-slate"
                 fullWidth
                 className="py-3.5 h-auto text-sm rounded-xl font-bold bg-slate-100 hover:bg-slate-200 flex items-center justify-center gap-2"
                 onClick={() => setLectureActionLog("Clicked: Lưu bài viết")}
@@ -1458,9 +1458,9 @@ export default function UILabPage() {
             {/* LectureRowCard */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-slate-700 border-b pb-3">13.3 LectureRowCard Atoms</h3>
-              
+
               <div className="space-y-4">
-                <LectureRowCard 
+                <LectureRowCard
                   imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuDFyR2dPO3YUvSW77SfHGSTI8IOvpNB9DC2Z5JAqRbn7sQ7JdcPZpzxdL2aeDGqdTbdRTiHZoCZgtHzfmwclKFK-Yba5Y1rSyaDk427_S5lXzlEW-Ui3rjJO8udm1WEHWPNitbIKbVDKY9D6SE0pVPEAsjdXjYvbIR6jVRuHCTg0_aFvKZ8Vx8O5s49UsvYP3R7dGymdZRxMlP8lYVY_s5Kg2SUNiJH8N9w4LojiL2i0pQxQviLlBZp_mmBYgnXLGFQmD7pd9rti2TG"
                   title="Thể tích khối lăng trụ đứng và lăng trụ xiên"
                   category="Hình học lớp 12"
@@ -1470,8 +1470,8 @@ export default function UILabPage() {
                     setLectureActionLog("Clicked: Bài giảng liên quan (Khối lăng trụ)");
                   }}
                 />
-                
-                <LectureRowCard 
+
+                <LectureRowCard
                   imageSrc="https://lh3.googleusercontent.com/aida-public/AB6AXuDRHkSJjH-Rb63ttXabCUwd9bYLe1tPqVPnwCtM7d5nHXIWGSqh-H7IOfdH8m5XZf52Vb_WbsQWlQnoI_jPmXKVNabc0ViEeAM5GkeBhJtf8ujU-KKr-LR-819FzYdpePGwkKxmgXnZ69KEeh6wGns6zD1VkxEfCXBaLLJbkqvTfF4yuaTIaUIZ2xlyMwhi_wBTwOv1jkiQmBS_6DC7j3yZVlG6DtrvSVdVTclUEzmAwNa59Vw_LMkc68t0hjNHFtNOGZ3n05_rLGxO"
                   title="Góc và khoảng cách trong không gian 3D"
                   category="Luyện đề THPT"
@@ -1487,11 +1487,11 @@ export default function UILabPage() {
             {/* InfoCard (Teacher notes and alert boxes) */}
             <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-slate-700 border-b pb-3">13.4 InfoCard Atoms</h3>
-              
+
               <div className="space-y-4">
-                <InfoCard 
-                  variant="danger" 
-                  icon="warning" 
+                <InfoCard
+                  variant="danger"
+                  icon="warning"
                   title="Lưu ý khi làm bài"
                   onClick={() => setLectureActionLog("Clicked: InfoCard (Lưu ý khi làm bài)")}
                   className="cursor-pointer"
@@ -1502,9 +1502,9 @@ export default function UILabPage() {
                   </ul>
                 </InfoCard>
 
-                <InfoCard 
-                  variant="warning" 
-                  icon="bolt" 
+                <InfoCard
+                  variant="warning"
+                  icon="bolt"
                   title="Kinh nghiệm thi"
                   onClick={() => setLectureActionLog("Clicked: InfoCard (Kinh nghiệm thi)")}
                   className="cursor-pointer"
@@ -1539,11 +1539,11 @@ export default function UILabPage() {
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-          
+
           {/* Column 1: Circular Gauge & Question Map (Col Span 4) */}
           <div className="lg:col-span-4 space-y-6">
             <h3 className="text-sm font-bold text-slate-700 border-b pb-3">14.1 Score Gauge & Question Map Map</h3>
-            
+
             <ResultScoreGauge
               score={8.5}
               maxScore={10}
@@ -1603,37 +1603,37 @@ export default function UILabPage() {
 
           {/* Column 2: AnswerOption & HandwrittenPaper (Col Span 8) */}
           <div className="lg:col-span-8 space-y-6">
-            
+
             {/* AnswerOption Atom Showcase */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-slate-700 border-b pb-3">14.2 AnswerOption Atoms</h3>
-              
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <AnswerOption 
-                  label="A" 
-                  content="0" 
-                  status="default" 
+                <AnswerOption
+                  label="A"
+                  content="0"
+                  status="default"
                   onClick={() => setResultActionLog("Clicked: Option A (Default)")}
                 />
-                
-                <AnswerOption 
-                  label="B" 
-                  content="2 (Lựa chọn của bạn)" 
-                  status="wrong" 
+
+                <AnswerOption
+                  label="B"
+                  content="2 (Lựa chọn của bạn)"
+                  status="wrong"
                   onClick={() => setResultActionLog("Clicked: Option B (Lựa chọn của bạn - Sai)")}
                 />
-                
-                <AnswerOption 
-                  label="C" 
-                  content="4 (Đáp án đúng)" 
-                  status="correct" 
+
+                <AnswerOption
+                  label="C"
+                  content="4 (Đáp án đúng)"
+                  status="correct"
                   onClick={() => setResultActionLog("Clicked: Option C (Đáp án đúng - Đúng)")}
                 />
 
-                <AnswerOption 
-                  label="D" 
-                  content="-2" 
-                  status="default" 
+                <AnswerOption
+                  label="D"
+                  content="-2"
+                  status="default"
                   onClick={() => setResultActionLog("Clicked: Option D (Default)")}
                 />
               </div>
@@ -1642,7 +1642,7 @@ export default function UILabPage() {
             {/* HandwrittenPaper Atom Showcase */}
             <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-4">
               <h3 className="text-sm font-bold text-slate-700 border-b pb-3">14.3 HandwrittenPaper Atoms</h3>
-              
+
               <HandwrittenPaper
                 annotations={[
                   { text: "Đúng điều kiện!", status: "success", top: "2rem", left: "60%" },

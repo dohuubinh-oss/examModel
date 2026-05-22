@@ -6,6 +6,7 @@ import { cn } from '@/lib/utils';
 export interface MathfieldInputProps extends Omit<React.HTMLAttributes<HTMLDivElement>, 'onChange'> {
   value?: string;
   onChange?: (value: string) => void;
+  onKeyDown?: (e: React.KeyboardEvent<any>) => void;
   placeholder?: string;
   className?: string;
   readOnly?: boolean;
@@ -14,6 +15,7 @@ export interface MathfieldInputProps extends Omit<React.HTMLAttributes<HTMLDivEl
 export const MathfieldInput: React.FC<MathfieldInputProps> = ({
   value = '',
   onChange,
+  onKeyDown,
   placeholder = 'Nhập công thức toán...',
   className,
   readOnly = false,
@@ -55,10 +57,16 @@ export const MathfieldInput: React.FC<MathfieldInputProps> = ({
     if (isLoaded && mfRef.current) {
       // Set read-only if requested
       mfRef.current.readOnly = readOnly;
-      
+
       // Customize keyboard and layout behaviors if needed
       mfRef.current.menuItems = []; // clean layout
-      
+
+      mfRef.current.setOptions({
+        smartMode: true,
+        defaultMode: 'math',
+        fontsDirectory: '/fonts/mathlive'
+      });
+
       // Apply customizable attributes
       if (placeholder) {
         mfRef.current.setAttribute('placeholder', placeholder);
@@ -67,7 +75,7 @@ export const MathfieldInput: React.FC<MathfieldInputProps> = ({
   }, [isLoaded, readOnly, placeholder]);
 
   return (
-    <div 
+    <div
       className={cn(
         "relative w-full rounded-xl border border-slate-200 bg-white dark:border-slate-800 dark:bg-slate-900 transition-all duration-200 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/5 overflow-hidden",
         className
@@ -86,12 +94,14 @@ export const MathfieldInput: React.FC<MathfieldInputProps> = ({
         <math-field
           ref={mfRef}
           onInput={handleInput}
-          class="w-full text-lg md:text-xl p-5 outline-none min-h-[80px] bg-transparent text-slate-800 dark:text-slate-100 font-serif"
+          onKeyDown={onKeyDown}
+          math-style="upright"
+          class="w-full text-base leading-relaxed p-5 outline-none h-full custom-scrollbar overflow-y-auto bg-transparent text-slate-800 dark:text-slate-100"
           style={{
             border: 'none',
             outline: 'none',
             boxShadow: 'none',
-            fontFamily: 'KaTeX_Main, Times New Roman, serif',
+            fontFamily: 'inherit',
           }}
         />
       )}

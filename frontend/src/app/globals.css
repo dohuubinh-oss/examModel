@@ -18,7 +18,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: 'Lexend', sans-serif;
 }
 
@@ -31,4 +36,13 @@ h1, h2, h3, h4, h5, h6 {
 .card-premium {
   @apply bg-white border border-slate-200 rounded-2xl p-8;
   box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+/* Tiptap Placeholder */
+.tiptap p.is-empty::before {
+  color: #94a3b8;
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  pointer-events: none;
 }

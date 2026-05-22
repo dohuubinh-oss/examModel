@@ -9,15 +9,19 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tiptap/extension-placeholder": "^3.23.5",
+    "@tiptap/pm": "^3.23.5",
+    "@tiptap/react": "^3.23.5",
+    "@tiptap/starter-kit": "^3.23.5",
     "clsx": "^2.1.0",
     "framer-motion": "^11.0.0",
     "katex": "^0.16.47",
     "lucide-react": "^1.16.0",
+    "mathlive": "^0.98.6",
     "next": "16.2.6",
     "react": "^19.2.6",
     "react-dom": "^19.2.6",
-    "tailwind-merge": "^2.2.0",
-    "mathlive": "^0.98.6"
+    "tailwind-merge": "^2.2.0"
   },
   "devDependencies": {
     "@types/katex": "^0.16.8",
