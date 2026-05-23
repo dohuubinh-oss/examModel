@@ -3,17 +3,25 @@ package models
 import (
 	"time"
 
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
 
+// QuestionGroup lưu trữ nội dung dùng chung cho một chùm câu hỏi
+type QuestionGroup struct {
+	ID            uint           `gorm:"primaryKey" json:"id"`
+	SharedContent string         `gorm:"type:text" json:"shared_content"`
+	ImageShared   *string        `gorm:"type:varchar(255)" json:"image_shared"`
+	Questions     []Question     `gorm:"foreignKey:QuestionGroupID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"questions,omitempty"`
+	CreatedAt     time.Time      `json:"created_at"`
+	UpdatedAt     time.Time      `json:"updated_at"`
+	DeletedAt     gorm.DeletedAt `gorm:"index" json:"-"`
+}
+
 type Question struct {
 	ID               uint           `gorm:"primaryKey" json:"id"`
-	CreatedAt        time.Time      `json:"created_at"`
-	UpdatedAt        time.Time      `json:"updated_at"`
-	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
+	QuestionGroupID  *uint          `gorm:"index" json:"question_group_id,omitempty"` // Foreign Key to QuestionGroup
 	
-	// Self-referencing grouping structure
-	ParentID         *uint          `gorm:"index" json:"parent_id,omitempty"`
 	TypeQuestion     string         `gorm:"type:varchar(50);not null;default:'single';check:type_question IN ('group','single')" json:"type_question"` // "single" or "group"
 	
 	// Question content and properties
@@ -35,8 +43,8 @@ type Question struct {
 	CreatedBy        string         `gorm:"type:varchar(100)" json:"created_by,omitempty"`
 	
 	// Arrays of options and tags
-	Tags             []string       `gorm:"serializer:json;type:jsonb" json:"tags,omitempty"`
-	Options          []string       `gorm:"serializer:json;type:jsonb" json:"options,omitempty"`
+	Tags             datatypes.JSON `gorm:"type:jsonb" json:"tags,omitempty"`
+	Options          datatypes.JSON `gorm:"type:jsonb" json:"options,omitempty"`
 	
 	// Answers and detailed solutions
 	CorrectAnswer    string         `gorm:"type:text" json:"correct_answer,omitempty"`
@@ -49,9 +57,10 @@ type Question struct {
 	Mistakes         string         `gorm:"type:text" json:"mistakes,omitempty"`
 	
 	// Image assets
-	ImageQuestion    string         `gorm:"type:varchar(255)" json:"image_question,omitempty"`
-	ImageSolution    string         `gorm:"type:varchar(255)" json:"image_solution,omitempty"`
+	ImageQuestion    *string        `gorm:"type:varchar(255)" json:"image_question,omitempty"`
+	ImageSolution    *string        `gorm:"type:varchar(255)" json:"image_solution,omitempty"`
 
-	// Relationship mapping
-	Children         []Question     `gorm:"foreignKey:ParentID" json:"children,omitempty"`
+	CreatedAt        time.Time      `json:"created_at"`
+	UpdatedAt        time.Time      `json:"updated_at"`
+	DeletedAt        gorm.DeletedAt `gorm:"index" json:"-"`
 }

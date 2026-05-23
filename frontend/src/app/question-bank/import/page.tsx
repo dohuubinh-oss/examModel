@@ -3,12 +3,11 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
 import {
-  ArrowLeft, Save, Code, FileText, HelpCircle, CheckSquare,
+  Save, Code, FileText, HelpCircle, CheckSquare,
   FileSignature, Info, Lightbulb, Rocket, Brain, Settings,
   Plus, Trash2, ChevronsLeft, ChevronsRight, ChevronLeft, AlertCircle,
-  ChevronDown, Check, Image as ImageIcon, Copy, Play, CheckCircle2,
-  Search, Edit2, Download, Filter, ChevronRight, Sparkles, Bold,
-  Italic, X, Keyboard
+  Image as ImageIcon, CheckCircle2,
+  ChevronRight, Sparkles, X, Keyboard, Library
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -21,30 +20,6 @@ import { TiptapEditor } from '@/components/ui/TiptapEditor';
 import { MathfieldInput } from '@/components/ui/MathfieldInput';
 import { Card, CardContent } from '@/components/ui/Card';
 import { Latex } from '@/components/ui/Latex';
-
-interface QuestionData {
-  id: string;
-  grade: string;
-  subject: string;
-  level: string;
-  tags: string[];
-  sharedContext: string;
-  sharedImage: string | null;
-  content: string;
-  questionImage: string | null;
-  type: 'multiple-choice' | 'essay';
-  options: string[];
-  correctAnswer: string;
-  solution: string;
-  solutionImage: string | null;
-  hint: string;
-  quickTip: string;
-  generalMethod: string;
-  typeQuestion?: 'group' | 'single';
-  difficultyPoint?: number;
-  point?: number;
-  mistakes?: string;
-}
 
 const JSON_PLACEHOLDER = `[{
   "shared_content": "Nội dung dẫn chung",
@@ -68,25 +43,33 @@ const JSON_PLACEHOLDER = `[{
     "mistakes": "lỗi sai thường gặp",
     "image_question": "URL string or null",
     "image_solution": "URL string or null"
-  }, {câu hỏi thứ 2}, {câu hỏi thứ 3}, ...]
-}, {câu hỏi 2}, {câu hỏi 3}, ...]`;
+  }]
+}]`;
 
 export default function SmartQuestionCreatorPage() {
   const router = useRouter();
 
   const [topicsByGrade, setTopicsByGrade] = React.useState<Record<string, string[]>>({
-    "Lớp 5": ["Số thập phân", "Hình học", "Toán chuyển động"],
-    "Lớp 6": ["Số tự nhiên", "Số nguyên", "Phân số", "Hình học trực quan"],
-    "Lớp 7": ["Số hữu tỉ", "Số thực", "Hàm số và đồ thị", "Tam giác"],
-    "Lớp 8": ["Đa thức", "Hằng đẳng thức", "Tứ giác", "Định lý Thalès"],
-    "Lớp 9": ["Đại số", "Căn bậc hai", "Hệ phương trình", "Hình học", "Đường tròn"],
-    "Ôn thi 10": ["Rút gọn biểu thức", "Phương trình bậc hai", "Bất đẳng thức", "Hình học phẳng"]
+    "Lớp 5": [],
+    "Lớp 6": [],
+    "Lớp 7": [],
+    "Lớp 8": [],
+    "Lớp 9": [],
+    "Ôn thi 10": []
   });
+
+  const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
+  const getImageUrl = (url?: string | null) => {
+    if (!url) return '';
+    if (url.startsWith('blob:') || url.startsWith('http')) return url;
+    return `${API_BASE_URL}${url}`;
+  };
 
   React.useEffect(() => {
     const fetchTopics = async () => {
       try {
-        const res = await fetch('http://localhost/api/v1/topics');
+        const res = await fetch(`${API_BASE_URL}/api/v1/topics`);
         if (res.ok) {
           const data = await res.json();
           const grouped: Record<string, string[]> = {
@@ -104,51 +87,80 @@ export default function SmartQuestionCreatorPage() {
           }
         }
       } catch (e) {
-        console.error('Failed to fetch topics', e);
+        if (e instanceof Error) {
+          console.warn('Backend chưa chạy hoặc Failed to fetch topics:', e.message);
+        } else {
+          console.warn('Failed to fetch topics', e);
+        }
       }
     };
     fetchTopics();
   }, []);
-  const handleImageUpload = (field: 'sharedImage' | 'questionImage' | 'solutionImage') => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = (e) => {
-      const file = (e.target as HTMLInputElement).files?.[0];
-      if (file) {
-        const url = URL.createObjectURL(file);
-        updateActiveQuestion({ [field]: url });
+
+  const handleAddNewQuestion = () => {
+    // Add to the end of the last group
+    setQuestionsGroup(prev => {
+      const newGroups = [...prev];
+      if (newGroups.length === 0) {
+        newGroups.push({ shared_content: "", image_shared: null, questions: [] });
       }
-    };
-    input.click();
+      const lastGroupIdx = newGroups.length - 1;
+      const newGroup = { ...newGroups[lastGroupIdx] };
+      newGroup.questions = [...newGroup.questions, {
+        type_question: "single",
+        grade: "",
+        topic: "",
+        difficulty_level: "",
+        difficulty_point: 0,
+        point: 1,
+        tags: [],
+        content: "",
+        image_question: null,
+        type: "Trắc nghiệm",
+        options: ["", "", "", ""],
+        correct_answer: "",
+        solution_guide: "",
+        image_solution: null,
+        hint: "",
+        quick_solve_tips: "",
+        general_method: "",
+        mistakes: ""
+      }];
+      newGroups[lastGroupIdx] = newGroup;
+      return newGroups;
+    });
+    setCurrentIndex(totalQuestions);
   };
 
-  // Set up mock database corresponding to Go-Gin API response structure
-  const [questions, setQuestions] = React.useState<QuestionData[]>([{
-    id: `q-${Date.now()}`,
-    typeQuestion: "single",
-    grade: "",
-    subject: "",
-    level: "",
-    difficultyPoint: 0,
-    point: 1,
-    tags: [],
-    sharedContext: "",
-    sharedImage: null,
-    content: "",
-    questionImage: null,
-    type: "multiple-choice",
-    options: ["", "", "", ""],
-    correctAnswer: "A",
-    solution: "",
-    solutionImage: null,
-    hint: "",
-    quickTip: "",
-    generalMethod: "",
-    mistakes: ""
-  }]);
+  const [questionsGroup, setQuestionsGroup] = React.useState<any[]>([
+    {
+      shared_content: "",
+      image_shared: null,
+      questions: [{
+        type_question: "single",
+        grade: "",
+        topic: "",
+        difficulty_level: "",
+        difficulty_point: 0,
+        point: 1,
+        tags: [],
+        content: "",
+        image_question: null,
+        type: "Trắc nghiệm",
+        options: ["", "", "", ""],
+        correct_answer: "A",
+        solution_guide: "",
+        image_solution: null,
+        hint: "",
+        quick_solve_tips: "",
+        general_method: "",
+        mistakes: ""
+      }]
+    }
+  ]);
   const [currentIndex, setCurrentIndex] = React.useState<number>(0);
   const [jsonInput, setJsonInput] = React.useState<string>("");
+  const [isParsed, setIsParsed] = React.useState<boolean>(false);
 
   const [newTagInput, setNewTagInput] = React.useState<string>("");
   const [isSaving, setIsSaving] = React.useState<boolean>(false);
@@ -176,184 +188,247 @@ export default function SmartQuestionCreatorPage() {
     setMathModalOpen(false);
   };
 
-  const activeQuestion = questions[currentIndex] || {
-    id: "temp",
-    typeQuestion: "single",
-    grade: "Lớp 9",
-    subject: "",
-    level: "",
-    difficultyPoint: 0,
-    point: 1,
-    tags: [],
-    sharedContext: "",
-    sharedImage: null,
-    content: "",
-    questionImage: null,
-    type: "multiple-choice",
-    options: ["", "", "", ""],
-    correctAnswer: "A",
-    solution: "",
-    solutionImage: null,
-    hint: "",
-    quickTip: "",
-    generalMethod: "",
-    mistakes: ""
+  const getIndicesFromFlatIndex = (flatIndex: number) => {
+    let count = 0;
+    for (let g = 0; g < questionsGroup.length; g++) {
+      const numQ = questionsGroup[g].questions.length;
+      if (flatIndex < count + numQ) {
+        return { groupIndex: g, questionIndex: flatIndex - count };
+      }
+      count += numQ;
+    }
+    return { groupIndex: 0, questionIndex: 0 };
   };
 
-  const updateActiveQuestion = (fields: Partial<QuestionData>) => {
-    setQuestions(prev => prev.map((q, idx) => idx === currentIndex ? { ...q, ...fields } : q));
+  const totalQuestions = questionsGroup.reduce((sum, g) => sum + g.questions.length, 0) || 1;
+  const { groupIndex, questionIndex } = getIndicesFromFlatIndex(currentIndex);
+  const currentGroup = questionsGroup[groupIndex] || { questions: [] };
+  const currentQ = currentGroup.questions[questionIndex] || {};
+
+  const activeQuestion = {
+    id: `q-${groupIndex}-${questionIndex}`,
+    typeQuestion: currentQ.type_question === 'group' ? 'group' : 'single',
+    grade: currentQ.grade || "",
+    subject: currentQ.topic || "",
+    level: currentQ.difficulty_level || "",
+    difficultyPoint: parseFloat(currentQ.difficulty_point) || 0,
+    point: parseFloat(currentQ.point) || 1.0,
+    tags: Array.isArray(currentQ.tags) ? currentQ.tags : [],
+    sharedContext: currentGroup.shared_content || "",
+    sharedImage: currentGroup.image_shared || null,
+    content: currentQ.content || "",
+    questionImage: currentQ.image_question || null,
+    type: currentQ.type === 'Tự luận' ? 'essay' : 'multiple-choice',
+    options: Array.isArray(currentQ.options) && currentQ.options.length >= 4 ? currentQ.options : ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
+    correctAnswer: currentQ.correct_answer || (currentQ.type === 'Tự luận' ? '' : 'A'),
+    solution: currentQ.solution_guide || "",
+    solutionImage: currentQ.image_solution || null,
+    hint: currentQ.hint || "",
+    quickTip: currentQ.quick_solve_tips || "",
+    generalMethod: currentQ.general_method || "",
+    mistakes: currentQ.mistakes || ""
   };
 
-  // JSON Quick Import handler matching mockup
+  const updateActiveQuestion = (fields: any) => {
+    setQuestionsGroup(prev => {
+      const newGroups = [...prev];
+      const g = { ...newGroups[groupIndex] };
+      const q = { ...g.questions[questionIndex] };
+
+      if ('sharedContext' in fields) g.shared_content = fields.sharedContext;
+      if ('sharedImage' in fields) g.image_shared = fields.sharedImage;
+      
+      if ('content' in fields) q.content = fields.content;
+      if ('questionImage' in fields) q.image_question = fields.questionImage;
+      if ('solutionImage' in fields) q.image_solution = fields.solutionImage;
+      if ('type' in fields) q.type = fields.type === 'essay' ? 'Tự luận' : 'Trắc nghiệm';
+      if ('correctAnswer' in fields) q.correct_answer = fields.correctAnswer;
+      if ('options' in fields) q.options = fields.options;
+      if ('solution' in fields) q.solution_guide = fields.solution;
+      if ('hint' in fields) q.hint = fields.hint;
+      if ('quickTip' in fields) q.quick_solve_tips = fields.quickTip;
+      if ('generalMethod' in fields) q.general_method = fields.generalMethod;
+      if ('mistakes' in fields) q.mistakes = fields.mistakes;
+      if ('grade' in fields) q.grade = fields.grade;
+      if ('subject' in fields) q.topic = fields.subject;
+      if ('level' in fields) q.difficulty_level = fields.level;
+      if ('difficultyPoint' in fields) q.difficulty_point = fields.difficultyPoint;
+      if ('point' in fields) q.point = fields.point;
+      if ('tags' in fields) q.tags = fields.tags;
+      if ('typeQuestion' in fields) q.type_question = fields.typeQuestion;
+
+      g.questions = [...g.questions];
+      g.questions[questionIndex] = q;
+      newGroups[groupIndex] = g;
+      return newGroups;
+    });
+  };
+
+  const handleImageUpload = async (field: 'sharedImage' | 'questionImage' | 'solutionImage') => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (file) {
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        try {
+          const tempUrl = URL.createObjectURL(file);
+          updateActiveQuestion({ [field]: tempUrl });
+          
+          const res = await fetch(`${API_BASE_URL}/api/v1/upload/temp`, {
+            method: 'POST',
+            body: formData,
+          });
+          const data = await res.json();
+          const finalUrl = data.url || data.data?.url;
+          if (res.ok && finalUrl) {
+            updateActiveQuestion({ [field]: finalUrl });
+          } else {
+            alert('Upload lỗi: ' + (data.message || 'Lỗi không xác định'));
+          }
+        } catch (err) {
+          console.error('Lỗi upload ảnh:', err);
+          alert('Upload thất bại');
+        }
+      }
+    };
+    input.click();
+  };
+
   const handleJsonImport = () => {
     if (!jsonInput.trim()) {
       alert("Vui lòng dán nội dung JSON vào trước khi xử lý!");
       return;
     }
     try {
-      // Clean up common LLM unescaped LaTeX issues in JSON strings before parsing
-      // LLMs often output \frac instead of \\frac, which JSON.parse interprets as form feed (\f)
       const cleanedInput = jsonInput
-        .replace(/(?<!\\)\\f/g, '\\\\f') // \frac -> \\frac
-        .replace(/(?<!\\)\\b/g, '\\\\b') // \begin -> \\begin
-        .replace(/(?<!\\)\\v/g, '\\\\v') // \vec -> \\vec
-        .replace(/(?<!\\)\\t/g, '\\\\t') // \text -> \\text
-        .replace(/(?<!\\)\\r/g, '\\\\r') // \right -> \\right
-        .replace(/(?<!\\)\\n/g, '\\\\n'); // \nabla -> \\nabla
+        .replace(/(?<!\\)\\f/g, '\\\\f')
+        .replace(/(?<!\\)\\b/g, '\\\\b')
+        .replace(/(?<!\\)\\v/g, '\\\\v')
+        .replace(/(?<!\\)\\t/g, '\\\\t')
+        .replace(/(?<!\\)\\r/g, '\\\\r')
+        .replace(/(?<!\\)\\n/g, '\\\\n');
 
       const parsed = JSON.parse(cleanedInput);
       if (!Array.isArray(parsed)) {
         alert("Dữ liệu JSON phải là một mảng (Array) các nhóm câu hỏi!");
         return;
       }
-
-      const importedQuestions: QuestionData[] = [];
-      let index = 0;
-
+      
+      let questionCount = 0;
       for (const group of parsed) {
-        const sharedContext = group.shared_content || "";
-        const sharedImage = group.image_shared || null;
-        const groupQuestions = Array.isArray(group.questions) ? group.questions : [];
-
-        for (const item of groupQuestions) {
-          importedQuestions.push({
-            id: `imported-${Date.now()}-${index++}`,
-            typeQuestion: item.type_question === 'group' ? 'group' : 'single',
-            grade: item.grade ? `Lớp ${item.grade}` : "Lớp 9",
-            subject: item.topic || "Đại số",
-            level: (item.difficulty_level || "Nhận biết").toUpperCase(),
-            difficultyPoint: parseFloat(item.difficulty_point) || 0,
-            point: parseFloat(item.point) || 1.0,
-            tags: Array.isArray(item.tags) ? item.tags : ["Nhập nhanh"],
-            sharedContext: sharedContext,
-            sharedImage: sharedImage,
-            content: item.content || "Nội dung câu hỏi",
-            questionImage: item.image_question || null,
-            type: item.type === "Tự luận" ? "essay" : "multiple-choice",
-            options: Array.isArray(item.options) && item.options.length >= 4 ? item.options : ["Đáp án A", "Đáp án B", "Đáp án C", "Đáp án D"],
-            correctAnswer: item.correct_answer || (item.type === "Tự luận" ? "" : "A"),
-            solution: item.solution_guide || "",
-            solutionImage: item.image_solution || null,
-            hint: item.hint || "",
-            quickTip: item.quick_solve_tips || "",
-            generalMethod: item.general_method || "",
-            mistakes: item.mistakes || ""
-          });
-        }
+         if (Array.isArray(group.questions)) {
+            questionCount += group.questions.length;
+         }
       }
 
-      if (importedQuestions.length === 0) {
+      if (questionCount === 0) {
         alert("Không tìm thấy câu hỏi nào trong JSON! Vui lòng kiểm tra lại cấu trúc.");
         return;
       }
 
-      setQuestions(importedQuestions);
+      // Xử lý transform `difficulty_level` lên UPPERCASE theo form gốc và xử lý `grade` thành format hiển thị UI
+      const updatedParsed = parsed.map(group => {
+         const newGroup = { ...group };
+         if (Array.isArray(newGroup.questions)) {
+            newGroup.questions = newGroup.questions.map((q: any) => {
+               // Transform grade
+               let uiGrade = q.grade;
+               if (typeof q.grade === 'number' || !isNaN(Number(q.grade))) {
+                 const num = Number(q.grade);
+                 uiGrade = num === 10 ? "Ôn thi 10" : `Lớp ${num}`;
+               }
+               
+               return {
+                 ...q,
+                 grade: uiGrade,
+                 difficulty_level: (q.difficulty_level || "Nhận biết").toUpperCase()
+               };
+            });
+         }
+         return newGroup;
+      });
+
+      setQuestionsGroup(updatedParsed);
+      setIsParsed(true);
       setCurrentIndex(0);
-      alert(`Đã bóc tách và thêm thành công ${importedQuestions.length} câu hỏi từ JSON!`);
+      alert(`Đã bóc tách và thêm thành công ${questionCount} câu hỏi từ JSON!`);
     } catch (e) {
       alert("Định dạng JSON không hợp lệ! Vui lòng kiểm tra lại dấu phẩy và ngoặc đóng.");
-      console.error(e);
+      if (e instanceof Error) {
+        console.warn("Lỗi phân tích JSON từ người dùng nhập:", e.message);
+      } else {
+        console.warn("Lỗi phân tích JSON từ người dùng nhập:", e);
+      }
     }
   };
 
-
-  // Sẵn sàng cho API Go-Gin (Simulated API Save Handler)
   const handleSaveToDatabase = async () => {
     setIsSaving(true);
     setSaveSuccess(false);
 
     try {
-      // Simulate real post payload to Go-Gin backend:
-      const payload = {
-        exam_id: "exam_chum_1",
-        questions: questions.map(q => ({
-          grade: q.grade,
-          subject: q.subject,
-          level: q.level,
-          tags: q.tags,
-          shared_context: q.sharedContext,
-          content: q.content,
-          type: q.type,
-          options: q.options,
-          correct_answer: q.correctAnswer,
-          solution: q.solution,
-          hint: q.hint,
-          quick_tip: q.quickTip,
-          general_method: q.generalMethod,
-          point: q.point,
-          difficulty_point: q.difficultyPoint,
-          mistakes: q.mistakes
-        }))
-      };
+      // Đảm bảo các trường ảnh luôn tồn tại trong output JSON, dù là null
+      const finalPayload = questionsGroup.map(group => ({
+        ...group,
+        image_shared: group.image_shared ?? null,
+        questions: Array.isArray(group.questions) ? group.questions.map((q: any) => ({
+          ...q,
+          image_question: q.image_question ?? null,
+          image_solution: q.image_solution ?? null
+        })) : []
+      }));
 
-      console.log("Posting payload to /api/v1/questions (Go-Gin Server):", payload);
+      console.log("DỮ LIỆU JSON CUỐI CÙNG CHUẨN BỊ GỬI LÊN BACKEND:", finalPayload);
+      
+      const res = await fetch(`${API_BASE_URL}/api/v1/questions/bulk`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(finalPayload)
+      });
+      
+      const data = await res.json();
+      
+      if (!res.ok) {
+        throw new Error(data.message || "Đã xảy ra lỗi khi lưu vào cơ sở dữ liệu");
+      }
 
-      // Simulate endpoint latency
-      await new Promise(resolve => setTimeout(resolve, 1500));
-
+      alert("Đã lưu thành công các câu hỏi vào cơ sở dữ liệu!");
       setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
-    } catch (e) {
-      alert("Không thể kết nối đến máy chủ API Go-Gin!");
+      setTimeout(() => {
+        window.location.reload();
+      }, 1500);
+    } catch (e: any) {
+      alert(e.message || "Đã xảy ra lỗi!");
+      console.error(e);
     } finally {
       setIsSaving(false);
     }
   };
 
-  const handleAddNewQuestion = () => {
-    const newQ: QuestionData = {
-      id: `q-${Date.now()}`,
-      grade: "",
-      subject: "",
-      level: "",
-      tags: [],
-      sharedContext: "",
-      sharedImage: null,
-      content: "",
-      questionImage: null,
-      type: "multiple-choice",
-      options: ["", "", "", ""],
-      correctAnswer: "A",
-      solution: "",
-      solutionImage: null,
-      hint: "",
-      quickTip: "",
-      generalMethod: "",
-      difficultyPoint: 0,
-      point: 1.0,
-      mistakes: ""
-    };
-    setQuestions(prev => [...prev, newQ]);
-    setCurrentIndex(questions.length);
-  };
-
   const handleDeleteQuestion = () => {
-    if (questions.length <= 1) {
+    if (totalQuestions <= 1) {
       alert("Ngân hàng phải chứa ít nhất một câu hỏi!");
       return;
     }
-    const filtered = questions.filter((_, idx) => idx !== currentIndex);
-    setQuestions(filtered);
+    setQuestionsGroup(prev => {
+      const newGroups = [...prev];
+      const g = { ...newGroups[groupIndex] };
+      g.questions = [...g.questions];
+      g.questions.splice(questionIndex, 1);
+      
+      if (g.questions.length === 0) {
+        newGroups.splice(groupIndex, 1);
+      } else {
+        newGroups[groupIndex] = g;
+      }
+      return newGroups;
+    });
     setCurrentIndex(Math.max(0, currentIndex - 1));
   };
 
@@ -380,6 +455,14 @@ export default function SmartQuestionCreatorPage() {
           </div>
           <div className="flex items-center gap-3">
             <Button
+              onClick={() => router.push('/question-bank')}
+              variant="outline"
+              className="bg-white hover:bg-slate-50 flex items-center gap-2 font-bold px-4"
+            >
+              <Library size={18} className="text-primary" /> 
+              <span className="text-slate-700">Ngân hàng câu hỏi</span>
+            </Button>
+            <Button
               onClick={handleSaveToDatabase}
               disabled={isSaving}
               variant="default"
@@ -400,7 +483,7 @@ export default function SmartQuestionCreatorPage() {
       {saveSuccess && (
         <div className="bg-emerald-550 text-white font-semibold text-center py-2.5 px-4 text-xs tracking-wider uppercase animate-fade-in flex items-center justify-center gap-2">
           <CheckSquare size={16} />
-          Đã đồng bộ hóa và lưu thành công tất cả câu hỏi vào cơ sở dữ liệu Go-Gin + PostgreSQL!
+          Đã lưu thành công vào cơ sở dữ liệu! Đang làm mới trang...
         </div>
       )}
 
@@ -424,11 +507,13 @@ export default function SmartQuestionCreatorPage() {
               <div className="relative pl-2">
                 <Textarea
                   variant="mono"
-                  className="min-h-[120px] pb-14 placeholder:whitespace-pre-wrap"
+                  disabled={isParsed}
+                  className={`min-h-[120px] pb-14 placeholder:whitespace-pre-wrap ${isParsed ? 'bg-slate-50 opacity-70 cursor-not-allowed' : ''}`}
                   value={jsonInput}
                   onChange={(e) => setJsonInput(e.target.value)}
                   placeholder={JSON_PLACEHOLDER}
                 />
+                {!isParsed && (
                 <Button
                   onClick={handleJsonImport}
                   variant="default"
@@ -438,6 +523,17 @@ export default function SmartQuestionCreatorPage() {
                   <Sparkles size={14} />
                   Xử lý JSON
                 </Button>
+                )}
+                {isParsed && (
+                  <Button
+                    onClick={() => { setIsParsed(false); setQuestionsGroup([]); }}
+                    variant="outline"
+                    size="sm"
+                    className="absolute bottom-3 right-3 font-bold text-xs flex items-center gap-2"
+                  >
+                    Sửa JSON
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -466,20 +562,20 @@ export default function SmartQuestionCreatorPage() {
                   {activeQuestion.typeQuestion === 'group' && (
                     <Badge variant="danger" className="ml-1 bg-red-100 text-red-600 border border-red-200">Câu hỏi chùm</Badge>
                   )}
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">/ {questions.length}</span>
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">/ {totalQuestions}</span>
                 </div>
 
                 <button
-                  onClick={() => setCurrentIndex(prev => Math.min(questions.length - 1, prev + 1))}
-                  disabled={currentIndex === questions.length - 1}
+                  onClick={() => setCurrentIndex(prev => Math.min(totalQuestions - 1, prev + 1))}
+                  disabled={currentIndex === totalQuestions - 1}
                   className="p-2 hover:bg-slate-100 rounded-full transition-colors border border-slate-100 shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center"
                   title="Câu sau"
                 >
                   <ChevronRight size={18} />
                 </button>
                 <button
-                  onClick={() => setCurrentIndex(questions.length - 1)}
-                  disabled={currentIndex === questions.length - 1}
+                  onClick={() => setCurrentIndex(totalQuestions - 1)}
+                  disabled={currentIndex === totalQuestions - 1}
                   className="p-2 hover:bg-slate-100 rounded-full transition-colors text-slate-400 disabled:opacity-30 cursor-pointer flex items-center justify-center"
                   title="Trang cuối"
                 >
@@ -515,7 +611,7 @@ export default function SmartQuestionCreatorPage() {
                     className="relative group border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 flex flex-col items-center justify-center min-h-[250px] hover:border-primary/50 transition-colors cursor-pointer overflow-hidden bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] bg-[size:20px_20px]"
                   >
                     {activeQuestion.sharedImage ? (
-                      <img src={activeQuestion.sharedImage} className="object-contain max-h-[240px]" alt="Shared" />
+                      <img src={getImageUrl(activeQuestion.sharedImage)} className="object-contain max-h-[240px]" alt="Shared" />
                     ) : (
                       <div className="text-center p-4">
                         <ImageIcon className="mx-auto text-4xl text-slate-300 group-hover:text-primary transition-colors mb-2" size={36} />
@@ -553,7 +649,7 @@ export default function SmartQuestionCreatorPage() {
                     className="relative group border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 flex flex-col items-center justify-center min-h-[250px] hover:border-primary/50 transition-colors cursor-pointer overflow-hidden bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] bg-[size:20px_20px]"
                   >
                     {activeQuestion.questionImage ? (
-                      <img src={activeQuestion.questionImage} className="object-contain max-h-[240px]" alt="Question" />
+                      <img src={getImageUrl(activeQuestion.questionImage)} className="object-contain max-h-[240px]" alt="Question" />
                     ) : (
                       <div className="text-center p-4">
                         <ImageIcon className="mx-auto text-5xl text-slate-300 group-hover:text-primary transition-colors mb-3" size={48} />
@@ -629,17 +725,15 @@ export default function SmartQuestionCreatorPage() {
                         <span className={`font-bold mr-4 select-none ${isCorrect ? 'text-primary' : 'text-slate-400'}`}>
                           {optLabel}.
                         </span>
-                        <input
-                          type="text"
+                        <TiptapEditor
                           value={optValue}
-                          onChange={(e) => {
+                          onValueChange={(content) => {
                             const updatedOpts = [...activeQuestion.options];
-                            updatedOpts[index] = e.target.value;
+                            updatedOpts[index] = content;
                             updateActiveQuestion({ options: updatedOpts });
                           }}
                           placeholder={`Nhập nội dung đáp án ${optLabel} (vd: x = 5)...`}
-                          className={`bg-transparent border-none p-0 w-full focus:ring-0 text-sm outline-none ${isCorrect ? 'font-bold text-slate-900' : 'font-medium text-slate-700'
-                            }`}
+                          className={`bg-transparent border-none p-0 w-full focus-within:ring-0 focus-within:border-transparent shadow-none !min-h-[40px] flex items-center ${isCorrect ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`}
                         />
                       </div>
                     </div>
@@ -674,7 +768,7 @@ export default function SmartQuestionCreatorPage() {
                     className="relative group border-2 border-dashed border-slate-200 rounded-2xl bg-slate-50/50 flex flex-col items-center justify-center min-h-[250px] hover:border-primary/50 transition-colors cursor-pointer overflow-hidden bg-[radial-gradient(#e2e8f0_1px,transparent_1px)] bg-[size:20px_20px]"
                   >
                     {activeQuestion.solutionImage ? (
-                      <img src={activeQuestion.solutionImage} className="object-contain max-h-[240px]" alt="Solution" />
+                      <img src={getImageUrl(activeQuestion.solutionImage)} className="object-contain max-h-[240px]" alt="Solution" />
                     ) : (
                       <div className="text-center p-4">
                         <ImageIcon className="mx-auto text-4xl text-slate-300 group-hover:text-primary transition-colors mb-2" size={36} />
@@ -711,7 +805,7 @@ export default function SmartQuestionCreatorPage() {
                   <Lightbulb size={16} className="text-amber-500" /> Gợi ý
                 </label>
                 <TiptapEditor
-                  placeholder="Nhập gợi ý cho học sinh (ví dụ: Sử dụng hằng đẳng thức $a^2 - b^2$)..."
+                  placeholder="Nhập gợi ý cho học sinh (ví dụ: Sử dụng hằng đẳng thức a² - b²)..."
                   value={activeQuestion.hint}
                   onValueChange={(val) => updateActiveQuestion({ hint: val })}
                 />
@@ -723,7 +817,7 @@ export default function SmartQuestionCreatorPage() {
                   <Rocket size={16} className="text-indigo-500" /> Mẹo giải nhanh
                 </label>
                 <TiptapEditor
-                  placeholder="Nhập các mẹo giải bài nhanh (ví dụ: Bấm máy tính tìm nghiệm kép $x = -b/2a$)..."
+                  placeholder="Nhập các mẹo giải bài nhanh (ví dụ: Bấm máy tính tìm nghiệm kép x = -b/2a)..."
                   value={activeQuestion.quickTip}
                   onValueChange={(val) => updateActiveQuestion({ quickTip: val })}
                 />
@@ -863,12 +957,12 @@ export default function SmartQuestionCreatorPage() {
                 <div className="space-y-3">
                   <label className="text-xs font-semibold text-slate-500 ml-1 select-none">Thẻ (Tags)</label>
                   <div className="flex flex-wrap gap-2 mb-4">
-                    {activeQuestion.tags.map((tag) => (
+                    {activeQuestion.tags.map((tag: string) => (
                       <Tag
                         key={tag}
                         label={tag}
                         onRemove={() => {
-                          const filteredTags = activeQuestion.tags.filter(t => t !== tag);
+                          const filteredTags = activeQuestion.tags.filter((t: string) => t !== tag);
                           updateActiveQuestion({ tags: filteredTags });
                         }}
                       />

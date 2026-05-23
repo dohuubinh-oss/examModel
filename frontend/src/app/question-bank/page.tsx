@@ -5,14 +5,17 @@ import { useRouter } from 'next/navigation';
 import { 
   Upload, Plus, School, BookOpen, Signal, FolderOpen, 
   Printer, Trash2, Sparkles, LayoutDashboard, 
-  Database, FileText, Users, FilterX
+  Database, FileText, Users, FilterX, RefreshCw, ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
 import { Collapsible } from '@/components/ui/Collapsible';
 import { FloatingActionBar } from '@/components/ui/FloatingActionBar';
 import { QuestionCard } from '@/components/questions/QuestionCard';
-import { mockQuestions } from '@/lib/mock-data';
+import { Question } from '@/lib/mock-data';
+import { QuestionAdapter } from '@/lib/question-adapter';
+
+const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/api';
 
 export default function QuestionBankPage() {
   const router = useRouter();
@@ -20,6 +23,56 @@ export default function QuestionBankPage() {
   const [selectedSubjects, setSelectedSubjects] = React.useState<string[]>([]);
   const [selectedLevels, setSelectedLevels] = React.useState<string[]>([]);
   const [selectedQs, setSelectedQs] = React.useState<string[]>([]);
+
+  const [questions, setQuestions] = React.useState<Question[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [pagination, setPagination] = React.useState({ page: 1, limit: 10, total: 0 });
+
+  const fetchQuestions = React.useCallback(async (pageToFetch: number = 1) => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: pageToFetch.toString(),
+        limit: pagination.limit.toString()
+      });
+
+      if (selectedGrades.length > 0) {
+        // e.g., '9' instead of 'Lớp 9'
+        const gradeInts = selectedGrades.map(g => g === '10' ? '10' : g).join(',');
+        params.append('grade', gradeInts);
+      }
+      if (selectedSubjects.length > 0) {
+        // NOTE: Our API filters by topic_id usually, but for now we'll pass topic string if backend supported it or we map it. 
+        // Our backend doesn't support topic name search directly via topic filter, it uses topic_id. 
+        // We might just skip subject filter in API or use search keyword. Let's use `q` for subject name for now.
+        params.append('q', selectedSubjects.join(' ')); 
+      }
+      if (selectedLevels.length > 0) {
+        params.append('difficulty_level', selectedLevels.join(','));
+      }
+
+      const res = await fetch(`${apiUrl}/v1/questions?${params.toString()}`);
+      if (res.ok) {
+        const data = await res.json();
+        const mappedQs = (data.data || []).map((q: any, i: number) => ({
+          ...QuestionAdapter.fromBackendToUI(q),
+          number: (pageToFetch - 1) * pagination.limit + i + 1
+        }));
+        setQuestions(mappedQs);
+        if (data.pagination) {
+          setPagination(prev => ({ ...prev, ...data.pagination }));
+        }
+      }
+    } catch (error) {
+      console.error("Failed to fetch questions:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [selectedGrades, selectedSubjects, selectedLevels, pagination.limit]);
+
+  React.useEffect(() => {
+    fetchQuestions(1);
+  }, [fetchQuestions]);
 
   const toggleGrade = (grade: string) => {
     setSelectedGrades(prev =>
@@ -52,16 +105,6 @@ export default function QuestionBankPage() {
     setSelectedQs([]);
   };
 
-  // Real-time client-side filter computation
-  const filteredQuestions = React.useMemo(() => {
-    return mockQuestions.filter(q => {
-      const matchGrade = selectedGrades.length === 0 || selectedGrades.some(g => q.topic.includes(`Lớp ${g}`));
-      const matchSubject = selectedSubjects.length === 0 || selectedSubjects.some(s => q.topic.includes(s));
-      const matchLevel = selectedLevels.length === 0 || selectedLevels.includes(q.level);
-      return matchGrade && matchSubject && matchLevel;
-    });
-  }, [selectedGrades, selectedSubjects, selectedLevels]);
-
   return (
     <div className="flex flex-col min-h-screen text-slate-900 bg-white font-display">
       {/* Header - Styled matching Create Exam page */}
@@ -77,7 +120,7 @@ export default function QuestionBankPage() {
             </button>
             <div>
               <h1 className="text-lg font-bold leading-tight">Quản lý ngân hàng câu hỏi</h1>
-              <p className="text-xs text-slate-500">Toán học THPT • Tổng số: {mockQuestions.length} câu hỏi</p>
+              <p className="text-xs text-slate-500">Toán học THPT • Tổng số: {pagination.total} câu hỏi</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -88,7 +131,17 @@ export default function QuestionBankPage() {
               <Upload size={20} />
               Nhập từ JSON
             </Button>
-            <Button variant="default" className="shadow-md shadow-primary/20">
+            <Button 
+              variant="default" 
+              className="shadow-md shadow-primary/20"
+              onClick={() => {
+                if (selectedQs.length > 0) {
+                  router.push(`/question-bank/create-exam?ids=${selectedQs.join(',')}`);
+                } else {
+                  router.push('/question-bank/create-exam');
+                }
+              }}
+            >
               <Plus size={20} />
               Tạo đề thi
             </Button>
@@ -186,8 +239,15 @@ export default function QuestionBankPage() {
           <div className="flex flex-col gap-6 w-full">
             {/* Dynamic Question List */}
             <div className="space-y-4">
-              {filteredQuestions.length > 0 ? (
-                filteredQuestions.map((q) => (
+              {loading ? (
+                <div className="border border-dashed border-slate-200 bg-slate-50/50 p-12 rounded-xl text-center">
+                  <RefreshCw className="mx-auto h-6 w-6 text-primary animate-spin mb-2" />
+                  <span className="text-sm text-slate-500 font-medium font-display">
+                    Đang tải dữ liệu...
+                  </span>
+                </div>
+              ) : questions.length > 0 ? (
+                questions.map((q) => (
                   <QuestionCard
                     key={q.id}
                     question={q}
@@ -205,14 +265,32 @@ export default function QuestionBankPage() {
               )}
             </div>
 
-            {/* Pagination Mockup */}
-            {filteredQuestions.length > 0 && (
+            {/* Pagination Mockup -> Real Pagination */}
+            {!loading && questions.length > 0 && (
               <div className="flex items-center justify-between pt-6 border-t border-slate-100">
                 <p className="text-sm text-slate-500">
-                  Hiển thị <span className="font-bold text-slate-800">1 - {filteredQuestions.length}</span> trong số <span className="font-bold text-slate-800">{filteredQuestions.length}</span> câu hỏi
+                  Hiển thị <span className="font-bold text-slate-800">{(pagination.page - 1) * pagination.limit + 1} - {Math.min(pagination.page * pagination.limit, pagination.total)}</span> trong số <span className="font-bold text-slate-800">{pagination.total}</span> câu hỏi
                 </p>
                 <div className="flex items-center gap-1">
-                  <Button variant="outline" size="sm" className="w-8 h-8 p-0" disabled>1</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-8 h-8 p-0" 
+                    disabled={pagination.page <= 1}
+                    onClick={() => fetchQuestions(pagination.page - 1)}
+                  >
+                    <ChevronLeft size={16} />
+                  </Button>
+                  <Button variant="default" size="sm" className="w-8 h-8 p-0">{pagination.page}</Button>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="w-8 h-8 p-0"
+                    disabled={pagination.page * pagination.limit >= pagination.total}
+                    onClick={() => fetchQuestions(pagination.page + 1)}
+                  >
+                    <ChevronRight size={16} />
+                  </Button>
                 </div>
               </div>
             )}
@@ -226,6 +304,11 @@ export default function QuestionBankPage() {
         isOpen={selectedQs.length > 0}
         onClear={() => setSelectedQs([])}
         actions={[
+          {
+            label: 'Tạo đề thi',
+            icon: <Plus className="h-3.5 w-3.5" />,
+            onClick: () => router.push(`/question-bank/create-exam?ids=${selectedQs.join(',')}`)
+          },
           {
             label: 'Lưu vào thư mục',
             icon: <FolderOpen className="h-3.5 w-3.5" />,

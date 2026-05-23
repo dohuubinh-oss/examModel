@@ -1,13 +1,23 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/modeptrai/exam-model-backend/models"
+	"github.com/modeptrai/exam-model-backend/services"
+	"gorm.io/datatypes"
 	"gorm.io/gorm"
 )
+
+type APIResponse struct {
+	Status  string      `json:"status"`
+	Message string      `json:"message"`
+	Data    interface{} `json:"data,omitempty"`
+}
 
 type QuestionController struct {
 	DB *gorm.DB
@@ -17,29 +27,51 @@ func NewQuestionController(db *gorm.DB) *QuestionController {
 	return &QuestionController{DB: db}
 }
 
-type QuestionInput struct {
-	ParentID         *uint           `json:"parent_id"`
-	TypeQuestion     string          `json:"type_question"`
-	Content          string          `json:"content"`
-	Type             string          `json:"type"`
-	Grade            int             `json:"grade"`
-	Topic            string          `json:"topic"`
-	TopicID          *uint           `json:"topic_id"`
-	DifficultyLevel  string          `json:"difficulty_level"`
-	DifficultyPoint  float64         `json:"difficulty_point"`
-	Point            float64         `json:"point"`
-	Status           string          `json:"status"`
-	Options          []string        `json:"options"`
-	CorrectAnswer    string          `json:"correct_answer"`
-	SolutionGuide    string          `json:"solution_guide"`
-	Hint             string          `json:"hint"`
-	QuickSolveTips   string          `json:"quick_solve_tips"`
-	GeneralMethod    string          `json:"general_method"`
-	Mistakes         string          `json:"mistakes"`
-	ImageQuestion    string          `json:"image_question"`
-	ImageSolution    string          `json:"image_solution"`
-	Tags             []string        `json:"tags"`
-	Children         []QuestionInput `json:"children"`
+// HandleCreateBulkQuestions tiếp nhận request thêm hàng loạt câu hỏi
+func (qc *QuestionController) HandleCreateBulkQuestions(c *gin.Context) {
+	var payload []services.QuestionGroupRequest
+
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, APIResponse{
+			Status:  "error",
+			Message: "Dữ liệu JSON không hợp lệ hoặc sai định dạng",
+			Data:    err.Error(),
+		})
+		return
+	}
+
+	if len(payload) == 0 {
+		c.JSON(http.StatusBadRequest, APIResponse{
+			Status:  "error",
+			Message: "Payload trống. Yêu cầu ít nhất 1 QuestionGroup.",
+		})
+		return
+	}
+
+	err := services.CreateBulkQuestions(qc.DB, payload)
+	
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, APIResponse{
+			Status:  "error",
+			Message: "Không thể lưu dữ liệu vào hệ thống do lỗi nội bộ",
+			Data:    err.Error(),
+		})
+		return
+	}
+
+	totalQuestions := 0
+	for _, group := range payload {
+		totalQuestions += len(group.Questions)
+	}
+
+	c.JSON(http.StatusCreated, APIResponse{
+		Status:  "success",
+		Message: "Thêm mới câu hỏi hàng loạt thành công",
+		Data: map[string]int{
+			"groups_added":    len(payload),
+			"questions_added": totalQuestions,
+		},
+	})
 }
 
 // GetQuestions retrieves a paginated list of questions matching filters and search term q
@@ -49,34 +81,63 @@ func (qc *QuestionController) GetQuestions(c *gin.Context) {
 
 	dbQuery := qc.DB.Model(&models.Question{})
 
-	// Filter by parent_id. If omitted, default to parent_id IS NULL to avoid listing children questions.
-	parentIDQuery := c.Query("parent_id")
-	if parentIDQuery == "" {
-		dbQuery = dbQuery.Where("parent_id IS NULL")
-	} else if parentIDQuery != "all" {
-		if parentIDQuery == "null" {
-			dbQuery = dbQuery.Where("parent_id IS NULL")
+	// Filter by question_group_id
+	groupIDQuery := c.Query("question_group_id")
+	idsStr := c.Query("ids")
+
+	if groupIDQuery != "" {
+		if groupIDQuery == "null" {
+			dbQuery = dbQuery.Where("question_group_id IS NULL")
 		} else {
-			pID, err := strconv.ParseUint(parentIDQuery, 10, 32)
+			gID, err := strconv.ParseUint(groupIDQuery, 10, 32)
 			if err == nil {
-				dbQuery = dbQuery.Where("parent_id = ?", uint(pID))
+				dbQuery = dbQuery.Where("question_group_id = ?", uint(gID))
 			}
+		}
+	}
+
+	// Filter by IDs
+	if idsStr != "" {
+		ids := strings.Split(idsStr, ",")
+		var idInts []uint
+		for _, id := range ids {
+			if i, err := strconv.ParseUint(id, 10, 32); err == nil {
+				idInts = append(idInts, uint(i))
+			}
+		}
+		if len(idInts) > 0 {
+			dbQuery = dbQuery.Where("id IN ?", idInts)
 		}
 	}
 
 	// Filter parameters
 	if gradeStr := c.Query("grade"); gradeStr != "" {
-		if grade, err := strconv.Atoi(gradeStr); err == nil {
-			dbQuery = dbQuery.Where("grade = ?", grade)
+		grades := strings.Split(gradeStr, ",")
+		var gradeInts []int
+		for _, g := range grades {
+			if gInt, err := strconv.Atoi(g); err == nil {
+				gradeInts = append(gradeInts, gInt)
+			}
+		}
+		if len(gradeInts) > 0 {
+			dbQuery = dbQuery.Where("grade IN ?", gradeInts)
 		}
 	}
 	if topicIDStr := c.Query("topic_id"); topicIDStr != "" {
-		if topicID, err := strconv.ParseUint(topicIDStr, 10, 32); err == nil {
-			dbQuery = dbQuery.Where("topic_id = ?", uint(topicID))
+		topics := strings.Split(topicIDStr, ",")
+		var topicInts []uint
+		for _, t := range topics {
+			if tInt, err := strconv.ParseUint(t, 10, 32); err == nil {
+				topicInts = append(topicInts, uint(tInt))
+			}
+		}
+		if len(topicInts) > 0 {
+			dbQuery = dbQuery.Where("topic_id IN ?", topicInts)
 		}
 	}
 	if diffLevel := c.Query("difficulty_level"); diffLevel != "" {
-		dbQuery = dbQuery.Where("difficulty_level = ?", diffLevel)
+		levels := strings.Split(diffLevel, ",")
+		dbQuery = dbQuery.Where("difficulty_level IN ?", levels)
 	}
 	if qType := c.Query("type"); qType != "" {
 		dbQuery = dbQuery.Where("type = ?", qType)
@@ -112,7 +173,7 @@ func (qc *QuestionController) GetQuestions(c *gin.Context) {
 	offset := (page - 1) * limit
 
 	// Fetch data
-	if err := dbQuery.Preload("TopicRel").Preload("Children").Offset(offset).Limit(limit).Find(&questions).Error; err != nil {
+	if err := dbQuery.Preload("TopicRel").Offset(offset).Limit(limit).Find(&questions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch questions: " + err.Error()})
 		return
 	}
@@ -133,7 +194,7 @@ func (qc *QuestionController) GetQuestions(c *gin.Context) {
 	})
 }
 
-// GetQuestion retrieves a single question by ID with children and topic preloaded
+// GetQuestion retrieves a single question by ID
 func (qc *QuestionController) GetQuestion(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -142,7 +203,7 @@ func (qc *QuestionController) GetQuestion(c *gin.Context) {
 	}
 
 	var question models.Question
-	if err := qc.DB.Preload("TopicRel").Preload("Children").First(&question, uint(id)).Error; err != nil {
+	if err := qc.DB.Preload("TopicRel").First(&question, uint(id)).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
 		} else {
@@ -154,118 +215,28 @@ func (qc *QuestionController) GetQuestion(c *gin.Context) {
 	c.JSON(http.StatusOK, question)
 }
 
-// CreateQuestions creates a question (single or group package with nested children in a transaction)
-func (qc *QuestionController) CreateQuestions(c *gin.Context) {
-	var input QuestionInput
-	if err := c.ShouldBindJSON(&input); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data: " + err.Error()})
-		return
-	}
-
-	// Validate inputs
-	if input.Content == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Question content cannot be empty"})
-		return
-	}
-	if input.Type != "Trắc nghiệm" && input.Type != "Tự luận" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Question type must be 'Trắc nghiệm' or 'Tự luận'"})
-		return
-	}
-	if input.TypeQuestion == "" {
-		input.TypeQuestion = "single"
-	}
-	if input.TypeQuestion != "single" && input.TypeQuestion != "group" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "TypeQuestion must be 'single' or 'group'"})
-		return
-	}
-	if input.Grade < 5 || input.Grade > 10 {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Grade must be between 5 and 10"})
-		return
-	}
-	if input.DifficultyLevel == "" {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Difficulty level is required"})
-		return
-	}
-	if input.Status == "" {
-		input.Status = "draft"
-	}
-
-	tx := qc.DB.Begin()
-
-	parent := models.Question{
-		ParentID:         input.ParentID,
-		TypeQuestion:     input.TypeQuestion,
-		Content:          input.Content,
-		Type:             input.Type,
-		Grade:            input.Grade,
-		Topic:            input.Topic,
-		TopicID:          input.TopicID,
-		DifficultyLevel:  input.DifficultyLevel,
-		DifficultyPoint:  input.DifficultyPoint,
-		Point:            input.Point,
-		Status:           input.Status,
-		Options:          input.Options,
-		CorrectAnswer:    input.CorrectAnswer,
-		SolutionGuide:    input.SolutionGuide,
-		Hint:             input.Hint,
-		QuickSolveTips:   input.QuickSolveTips,
-		GeneralMethod:    input.GeneralMethod,
-		Mistakes:         input.Mistakes,
-		ImageQuestion:    input.ImageQuestion,
-		ImageSolution:    input.ImageSolution,
-		Tags:             input.Tags,
-	}
-
-	if err := tx.Create(&parent).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create question: " + err.Error()})
-		return
-	}
-
-	// Create nested children if provided
-	if input.TypeQuestion == "group" && len(input.Children) > 0 {
-		for _, childInput := range input.Children {
-			child := models.Question{
-				ParentID:         &parent.ID,
-				TypeQuestion:     "single",
-				Content:          childInput.Content,
-				Type:             childInput.Type,
-				Grade:            childInput.Grade,
-				Topic:            childInput.Topic,
-				TopicID:          childInput.TopicID,
-				DifficultyLevel:  childInput.DifficultyLevel,
-				DifficultyPoint:  childInput.DifficultyPoint,
-				Point:            childInput.Point,
-				Status:           parent.Status, // Inherit parent status
-				Options:          childInput.Options,
-				CorrectAnswer:    childInput.CorrectAnswer,
-				SolutionGuide:    childInput.SolutionGuide,
-				Hint:             childInput.Hint,
-				QuickSolveTips:   childInput.QuickSolveTips,
-				GeneralMethod:    childInput.GeneralMethod,
-				Mistakes:         childInput.Mistakes,
-				ImageQuestion:    childInput.ImageQuestion,
-				ImageSolution:    childInput.ImageSolution,
-				Tags:             childInput.Tags,
-			}
-			if err := tx.Create(&child).Error; err != nil {
-				tx.Rollback()
-				c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create child question: " + err.Error()})
-				return
-			}
-		}
-	}
-
-	tx.Commit()
-
-	// Preload to return fully populated response
-	var responseQuestion models.Question
-	if err := qc.DB.Preload("TopicRel").Preload("Children").First(&responseQuestion, parent.ID).Error; err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load created question: " + err.Error()})
-		return
-	}
-
-	c.JSON(http.StatusCreated, responseQuestion)
+type QuestionUpdateInput struct {
+	QuestionGroupID  *uint           `json:"question_group_id"`
+	TypeQuestion     string          `json:"type_question"`
+	Content          string          `json:"content"`
+	Type             string          `json:"type"`
+	Grade            int             `json:"grade"`
+	Topic            string          `json:"topic"`
+	TopicID          *uint           `json:"topic_id"`
+	DifficultyLevel  string          `json:"difficulty_level"`
+	DifficultyPoint  float64         `json:"difficulty_point"`
+	Point            float64         `json:"point"`
+	Status           string          `json:"status"`
+	Options          []string        `json:"options"`
+	CorrectAnswer    string          `json:"correct_answer"`
+	SolutionGuide    string          `json:"solution_guide"`
+	Hint             string          `json:"hint"`
+	QuickSolveTips   string          `json:"quick_solve_tips"`
+	GeneralMethod    string          `json:"general_method"`
+	Mistakes         string          `json:"mistakes"`
+	ImageQuestion    *string         `json:"image_question"`
+	ImageSolution    *string         `json:"image_solution"`
+	Tags             []string        `json:"tags"`
 }
 
 // UpdateQuestion updates an existing question
@@ -286,7 +257,7 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 		return
 	}
 
-	var input QuestionInput
+	var input QuestionUpdateInput
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data: " + err.Error()})
 		return
@@ -321,7 +292,8 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 		question.Status = input.Status
 	}
 	if input.Options != nil {
-		question.Options = input.Options
+		optionsBytes, _ := json.Marshal(input.Options)
+		question.Options = datatypes.JSON(optionsBytes)
 	}
 	if input.CorrectAnswer != "" {
 		question.CorrectAnswer = input.CorrectAnswer
@@ -341,14 +313,21 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 	if input.Mistakes != "" {
 		question.Mistakes = input.Mistakes
 	}
-	if input.ImageQuestion != "" {
+	if input.ImageQuestion != nil {
 		question.ImageQuestion = input.ImageQuestion
 	}
-	if input.ImageSolution != "" {
+	if input.ImageSolution != nil {
 		question.ImageSolution = input.ImageSolution
 	}
 	if input.Tags != nil {
-		question.Tags = input.Tags
+		tagsBytes, _ := json.Marshal(input.Tags)
+		question.Tags = datatypes.JSON(tagsBytes)
+	}
+	if input.QuestionGroupID != nil {
+		question.QuestionGroupID = input.QuestionGroupID
+	}
+	if input.TypeQuestion != "" {
+		question.TypeQuestion = input.TypeQuestion
 	}
 
 	if err := qc.DB.Save(&question).Error; err != nil {
@@ -356,9 +335,8 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 		return
 	}
 
-	// Return updated with relations preloaded
 	var responseQuestion models.Question
-	if err := qc.DB.Preload("TopicRel").Preload("Children").First(&responseQuestion, question.ID).Error; err != nil {
+	if err := qc.DB.Preload("TopicRel").First(&responseQuestion, question.ID).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to load updated question: " + err.Error()})
 		return
 	}
@@ -366,7 +344,7 @@ func (qc *QuestionController) UpdateQuestion(c *gin.Context) {
 	c.JSON(http.StatusOK, responseQuestion)
 }
 
-// DeleteQuestion soft-deletes a question and cascades to children
+// DeleteQuestion soft-deletes a question
 func (qc *QuestionController) DeleteQuestion(c *gin.Context) {
 	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
 	if err != nil {
@@ -384,23 +362,57 @@ func (qc *QuestionController) DeleteQuestion(c *gin.Context) {
 		return
 	}
 
-	tx := qc.DB.Begin()
-
-	// Soft delete child questions cascadingly
-	if err := tx.Where("parent_id = ?", question.ID).Delete(&models.Question{}).Error; err != nil {
-		tx.Rollback()
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to cascade delete children: " + err.Error()})
-		return
-	}
-
-	// Soft delete the parent question itself
-	if err := tx.Delete(&question).Error; err != nil {
-		tx.Rollback()
+	if err := qc.DB.Delete(&question).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete question: " + err.Error()})
 		return
 	}
 
-	tx.Commit()
+	c.JSON(http.StatusOK, gin.H{"message": "Question soft-deleted successfully"})
+}
 
-	c.JSON(http.StatusOK, gin.H{"message": "Question and its children soft-deleted successfully"})
+// GetQuestionGroup retrieves a question group and its questions
+func (qc *QuestionController) GetQuestionGroup(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid group ID"})
+		return
+	}
+
+	var group models.QuestionGroup
+	if err := qc.DB.Preload("Questions").First(&group, uint(id)).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Question group not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch question group: " + err.Error()})
+		}
+		return
+	}
+
+	c.JSON(http.StatusOK, group)
+}
+
+// DeleteQuestionGroup soft-deletes a group and cascades to its questions
+func (qc *QuestionController) DeleteQuestionGroup(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid group ID"})
+		return
+	}
+
+	var group models.QuestionGroup
+	if err := qc.DB.First(&group, uint(id)).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Question group not found"})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find question group: " + err.Error()})
+		}
+		return
+	}
+
+	if err := qc.DB.Select("Questions").Delete(&group).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete question group: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Question group soft-deleted successfully"})
 }

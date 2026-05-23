@@ -26,6 +26,7 @@ export function TiptapEditor({ value, onValueChange, placeholder = "Nhập nội
   const [isMounted, setIsMounted] = useState(false)
 
   const editor = useEditor({
+    immediatelyRender: false,
     extensions: [
       StarterKit,
       Placeholder.configure({

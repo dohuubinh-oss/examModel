@@ -9,6 +9,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/modeptrai/exam-model-backend/controllers"
+	"github.com/modeptrai/exam-model-backend/jobs"
 	"github.com/modeptrai/exam-model-backend/models"
 	"github.com/redis/go-redis/v9"
 	"gorm.io/driver/postgres"
@@ -36,7 +37,7 @@ func main() {
 	fmt.Println("Successfully connected to PostgreSQL")
 
 	// Auto-migrate schema
-	err = db.AutoMigrate(&models.Topic{}, &models.Question{}, &models.User{}, &models.Exam{}, &models.ExamQuestion{}, &models.TestResult{})
+	err = db.AutoMigrate(&models.Topic{}, &models.QuestionGroup{}, &models.Question{}, &models.User{}, &models.Exam{}, &models.ExamQuestion{}, &models.TestResult{})
 	if err != nil {
 		log.Fatalf("Failed to run database auto-migration: %v", err)
 	}
@@ -71,6 +72,10 @@ func main() {
 		c.Next()
 	})
 
+	// Static files for images
+	r.Static("/images/temp", "./public/images/temp")
+	r.Static("/images/questions", "./public/images/questions")
+
 	// Routes
 	r.GET("/health", func(c *gin.Context) {
 		c.JSON(http.StatusOK, gin.H{
@@ -99,12 +104,23 @@ func main() {
 		questionCtrl := controllers.NewQuestionController(DB)
 		v1.GET("/questions", questionCtrl.GetQuestions)
 		v1.GET("/questions/:id", questionCtrl.GetQuestion)
-		v1.POST("/questions", questionCtrl.CreateQuestions)
+		v1.POST("/questions/bulk", questionCtrl.HandleCreateBulkQuestions)
 		v1.PUT("/questions/:id", questionCtrl.UpdateQuestion)
 		v1.DELETE("/questions/:id", questionCtrl.DeleteQuestion)
+
+		// Question Group endpoints
+		v1.GET("/question-groups/:id", questionCtrl.GetQuestionGroup)
+		v1.DELETE("/question-groups/:id", questionCtrl.DeleteQuestionGroup)
+
+		// Upload endpoints
+		uploadCtrl := controllers.NewUploadController()
+		v1.POST("/upload/temp", uploadCtrl.UploadQuestionImageTemp)
 	}
 
-	// 4. Start Server
+	// 4. Start Background Jobs
+	go jobs.StartTempImageCleanupCron()
+
+	// 5. Start Server
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080"
