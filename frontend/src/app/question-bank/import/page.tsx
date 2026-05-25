@@ -7,7 +7,7 @@ import {
   FileSignature, Info, Lightbulb, Rocket, Brain, Settings,
   Plus, Trash2, ChevronsLeft, ChevronsRight, ChevronLeft, AlertCircle,
   Image as ImageIcon, CheckCircle2,
-  ChevronRight, Sparkles, X, Keyboard, Library
+  ChevronRight, Sparkles, X, Keyboard, Library, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -46,7 +46,18 @@ const JSON_PLACEHOLDER = `[{
   }]
 }]`;
 
+import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+
 export default function SmartQuestionCreatorPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen flex items-center justify-center text-slate-500">Đang tải...</div>}>
+      <CreatorContent />
+    </Suspense>
+  );
+}
+
+function CreatorContent() {
   const router = useRouter();
 
   const [topicsByGrade, setTopicsByGrade] = React.useState<Record<string, string[]>>({
@@ -59,6 +70,88 @@ export default function SmartQuestionCreatorPage() {
   });
 
   const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+
+  const searchParams = useSearchParams();
+  const editId = searchParams?.get('edit');
+  const editType = searchParams?.get('type');
+  const isEditMode = !!editId;
+
+  React.useEffect(() => {
+    if (isEditMode && editId) {
+      const fetchEditData = async () => {
+        try {
+          const endpoint = editType === 'group' 
+            ? `${API_BASE_URL}/api/v1/question-groups/${editId}`
+            : `${API_BASE_URL}/api/v1/questions/${editId}`;
+          const res = await fetch(endpoint);
+          if (!res.ok) throw new Error('Failed to fetch data for editing');
+          const data = await res.json();
+          
+          if (editType === 'group') {
+            const group = data.data;
+            setQuestionsGroup([{
+              id: group.id,
+              shared_content: group.shared_content || "",
+              image_shared: group.image_shared || null,
+              questions: group.Questions.map((q: any) => ({
+                id: q.id,
+                type_question: 'group',
+                grade: q.grade || "",
+                topic: q.topic || "",
+                difficulty_level: q.difficulty_level || "",
+                difficulty_point: q.difficulty_point || 0,
+                point: q.point || 1,
+                tags: typeof q.tags === 'string' ? JSON.parse(q.tags) : (q.tags || []),
+                content: q.content || "",
+                image_question: q.image_question || null,
+                type: q.type || "Trắc nghiệm",
+                options: typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || ["", "", "", ""]),
+                correct_answer: q.correct_answer || "",
+                solution_guide: q.solution_guide || "",
+                image_solution: q.image_solution || null,
+                hint: q.hint || "",
+                quick_solve_tips: q.quick_solve_tips || "",
+                general_method: q.general_method || "",
+                mistakes: q.mistakes || ""
+              }))
+            }]);
+          } else {
+            const q = data.data;
+            setQuestionsGroup([{
+              id: undefined,
+              shared_content: "",
+              image_shared: null,
+              questions: [{
+                id: q.id,
+                type_question: 'single',
+                grade: q.grade || "",
+                topic: q.topic || "",
+                difficulty_level: q.difficulty_level || "",
+                difficulty_point: q.difficulty_point || 0,
+                point: q.point || 1,
+                tags: typeof q.tags === 'string' ? JSON.parse(q.tags) : (q.tags || []),
+                content: q.content || "",
+                image_question: q.image_question || null,
+                type: q.type || "Trắc nghiệm",
+                options: typeof q.options === 'string' ? JSON.parse(q.options) : (q.options || ["", "", "", ""]),
+                correct_answer: q.correct_answer || "",
+                solution_guide: q.solution_guide || "",
+                image_solution: q.image_solution || null,
+                hint: q.hint || "",
+                quick_solve_tips: q.quick_solve_tips || "",
+                general_method: q.general_method || "",
+                mistakes: q.mistakes || ""
+              }]
+            }]);
+          }
+        } catch (error) {
+          console.error('Error fetching edit data:', error);
+          alert('Không thể tải dữ liệu câu hỏi để sửa');
+        }
+      };
+      fetchEditData();
+    }
+  }, [isEditMode, editId, editType, API_BASE_URL]);
 
   const getImageUrl = (url?: string | null) => {
     if (!url) return '';
@@ -78,7 +171,7 @@ export default function SmartQuestionCreatorPage() {
           const topicsList = Array.isArray(data) ? data : (data.data || []);
           topicsList.forEach((topic: any) => {
             const gradeKey = topic.grade === 10 ? "Ôn thi 10" : `Lớp ${topic.grade}`;
-            if (grouped[gradeKey]) {
+            if (grouped[gradeKey] && !grouped[gradeKey].includes(topic.name)) {
               grouped[gradeKey].push(topic.name);
             }
           });
@@ -375,22 +468,53 @@ export default function SmartQuestionCreatorPage() {
       const finalPayload = questionsGroup.map(group => ({
         ...group,
         image_shared: group.image_shared ?? null,
-        questions: Array.isArray(group.questions) ? group.questions.map((q: any) => ({
-          ...q,
-          image_question: q.image_question ?? null,
-          image_solution: q.image_solution ?? null
-        })) : []
+        questions: Array.isArray(group.questions) ? group.questions.map((q: any) => {
+          let numGrade = 0;
+          if (typeof q.grade === "string") {
+            if (q.grade === "Ôn thi 10") numGrade = 10;
+            else {
+               const match = q.grade.match(/\d+/);
+               if (match) numGrade = parseInt(match[0], 10);
+            }
+          } else if (typeof q.grade === "number") {
+            numGrade = q.grade;
+          }
+          return {
+            ...q,
+            grade: numGrade,
+            image_question: q.image_question ?? null,
+            image_solution: q.image_solution ?? null
+          };
+        }) : []
       }));
 
       console.log("DỮ LIỆU JSON CUỐI CÙNG CHUẨN BỊ GỬI LÊN BACKEND:", finalPayload);
       
-      const res = await fetch(`${API_BASE_URL}/api/v1/questions/bulk`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(finalPayload)
-      });
+      let res;
+      if (isEditMode && editId) {
+        if (editType === 'group') {
+          res = await fetch(`${API_BASE_URL}/api/v1/question-groups/${editId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalPayload[0]) // PUT group takes a single QuestionGroupRequest
+          });
+        } else {
+          // PUT single question
+          res = await fetch(`${API_BASE_URL}/api/v1/questions/${editId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(finalPayload[0].questions[0]) // PUT single takes QuestionRequest
+          });
+        }
+      } else {
+        res = await fetch(`${API_BASE_URL}/api/v1/questions/bulk`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(finalPayload)
+        });
+      }
       
       const data = await res.json();
       
@@ -398,10 +522,14 @@ export default function SmartQuestionCreatorPage() {
         throw new Error(data.message || "Đã xảy ra lỗi khi lưu vào cơ sở dữ liệu");
       }
 
-      alert("Đã lưu thành công các câu hỏi vào cơ sở dữ liệu!");
+      alert(isEditMode ? "Đã cập nhật câu hỏi thành công!" : "Đã lưu thành công các câu hỏi vào cơ sở dữ liệu!");
       setSaveSuccess(true);
       setTimeout(() => {
-        window.location.reload();
+        if (isEditMode) {
+          router.push('/question-bank');
+        } else {
+          window.location.reload();
+        }
       }, 1500);
     } catch (e: any) {
       alert(e.message || "Đã xảy ra lỗi!");
@@ -438,42 +566,75 @@ export default function SmartQuestionCreatorPage() {
       {/* Header aligned exactly with exams/create layout */}
       <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 px-4 md:px-8 py-3">
         <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => router.push('/question-bank')}
-              className="bg-primary/10 p-2 rounded-lg text-primary hover:bg-primary/20 transition-colors cursor-pointer flex items-center justify-center"
-              title="Về ngân hàng câu hỏi"
-            >
-              <Sparkles size={24} />
-            </button>
-            <div className="flex items-center gap-3">
-              <h1 className="text-lg font-bold leading-tight">Tạo câu hỏi thông minh</h1>
-              {activeQuestion.typeQuestion === 'group' && (
-                <Badge variant="danger" className="bg-red-100 text-red-600 border border-red-200">Câu hỏi chùm</Badge>
-              )}
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" className="p-2 h-10 w-10 shrink-0 text-slate-500 hover:text-slate-800 border border-slate-200" onClick={() => router.push('/question-bank')}>
+              <ChevronLeft size={20} />
+            </Button>
+            <div className="flex items-center gap-2.5">
+              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 border border-primary/20">
+                <Brain className="text-primary" size={20} />
+              </div>
+              <div className="hidden sm:block">
+                <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
+                  {isEditMode ? 'Cập nhật câu hỏi' : 'Thêm câu hỏi mới'}
+                  {isEditMode && <Badge variant="primary" className="bg-amber-500 hover:bg-amber-600 text-white border-0 text-[10px] py-0">ĐANG SỬA</Badge>}
+                </h1>
+                <p className="text-xs text-slate-500 font-medium">{isEditMode ? 'Chỉnh sửa nội dung câu hỏi' : 'Tạo mới hoặc tải lên câu hỏi'}</p>
+              </div>
             </div>
           </div>
+
+          {/* Header center / tabs - HIDDEN IN EDIT MODE */}
+          {!isEditMode && (
+            <div className="hidden md:flex bg-slate-100 p-1.5 rounded-xl border border-slate-200 shadow-inner max-w-sm w-full mx-4">
+              <button
+                className={`flex-1 py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${
+                  !isParsed 
+                    ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' 
+                    : 'text-slate-500 hover:text-slate-700'
+                }`}
+                onClick={() => setIsParsed(false)}
+              >
+                Nhập thủ công
+              </button>
+              <button
+                className={`flex-1 flex items-center justify-center gap-1.5 py-1.5 px-3 text-xs font-bold rounded-lg transition-all ${
+                  isParsed 
+                    ? 'bg-white text-primary shadow-sm ring-1 ring-black/5' 
+                    : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+                }`}
+                onClick={() => setIsParsed(true)}
+              >
+                <Code size={14} /> Tải từ file
+              </button>
+            </div>
+          )}
+
+          {/* Header right */}
           <div className="flex items-center gap-3">
-            <Button
-              onClick={() => router.push('/question-bank')}
-              variant="outline"
-              className="bg-white hover:bg-slate-50 flex items-center gap-2 font-bold px-4"
-            >
-              <Library size={18} className="text-primary" /> 
-              <span className="text-slate-700">Ngân hàng câu hỏi</span>
-            </Button>
-            <Button
+            <Button 
+              variant="default" 
+              className="gap-2 h-10 px-5 text-sm font-bold shadow-sm rounded-xl shrink-0 transition-transform active:scale-95"
               onClick={handleSaveToDatabase}
-              disabled={isSaving}
-              variant="default"
-              className="shadow-md shadow-primary/20 flex items-center gap-2 font-bold px-6"
+              disabled={isSaving || saveSuccess}
             >
               {isSaving ? (
-                <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                <div className="flex items-center gap-2">
+                  <RefreshCw size={16} className="animate-spin" />
+                  <span>Đang {isEditMode ? 'cập nhật' : 'lưu'}...</span>
+                </div>
+              ) : saveSuccess ? (
+                <div className="flex items-center gap-2 text-white">
+                  <CheckCircle2 size={16} />
+                  <span>Đã {isEditMode ? 'cập nhật' : 'lưu'}</span>
+                </div>
               ) : (
-                <Save size={18} />
+                <>
+                  <Save size={16} />
+                  <span className="hidden sm:inline">{isEditMode ? 'Cập nhật câu hỏi' : 'Lưu vào ngân hàng'}</span>
+                  <span className="inline sm:hidden">{isEditMode ? 'Cập nhật' : 'Lưu'}</span>
+                </>
               )}
-              {isSaving ? "Đang lưu..." : "Lưu vào ngân hàng"}
             </Button>
           </div>
         </div>
@@ -487,13 +648,13 @@ export default function SmartQuestionCreatorPage() {
         </div>
       )}
 
-      {/* Main Container - Sized exactly max-w-[1440px] gap-6 p-4 md:p-6 */}
-      <main className="max-w-[1440px] mx-auto p-4 md:p-6 grid grid-cols-1 lg:grid-cols-12 gap-6 w-full flex-1">
-
-        {/* Left Column (Main Work Area) (8 units) */}
-        <div className="lg:col-span-8 space-y-6">
+      {/* Main Content */}
+      <main className="max-w-[1400px] mx-auto w-full p-4 lg:p-6 lg:pt-8 flex flex-col lg:flex-row gap-6 relative">
+        {(!isParsed || isEditMode) ? (
+        <div className="lg:col-span-8 space-y-6 w-full">
 
           {/* AI / JSON Input Section */}
+          {!isEditMode && (
           <section className="space-y-4">
             <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm relative overflow-hidden group">
               <div className="absolute top-0 left-0 w-2 h-full bg-gradient-to-b from-primary to-blue-400"></div>
@@ -524,20 +685,13 @@ export default function SmartQuestionCreatorPage() {
                   Xử lý JSON
                 </Button>
                 )}
-                {isParsed && (
-                  <Button
-                    onClick={() => { setIsParsed(false); setQuestionsGroup([]); }}
-                    variant="outline"
-                    size="sm"
-                    className="absolute bottom-3 right-3 font-bold text-xs flex items-center gap-2"
-                  >
-                    Sửa JSON
-                  </Button>
-                )}
               </div>
             </div>
+          </section>
+          )}
 
-            {/* Navigation Controls Card */}
+          {/* Navigation Controls Card */}
+          {isParsed && (
             <div className="flex justify-center">
               <div className="bg-white rounded-full border border-slate-200 px-2 py-1.5 flex items-center gap-2 shadow-sm">
                 <button
@@ -591,7 +745,7 @@ export default function SmartQuestionCreatorPage() {
                 </button>
               </div>
             </div>
-          </section>
+          )}
 
           {/* Shared Context Card */}
           {activeQuestion.typeQuestion === 'group' && (
@@ -718,7 +872,7 @@ export default function SmartQuestionCreatorPage() {
                           className="w-6 h-6 text-primary border-slate-300 focus:ring-primary rounded-full cursor-pointer"
                         />
                       </div>
-                      <div className={`flex-grow flex items-center rounded-xl px-5 py-4 transition-all border ${isCorrect
+                      <div className={`flex-grow flex items-center rounded-xl px-5 py-2 transition-all border ${isCorrect
                         ? 'bg-blue-50/30 border-2 border-primary/40 ring-4 ring-primary/5'
                         : 'bg-slate-50 border-slate-200 focus-within:border-primary/50 focus-within:ring-4 focus-within:ring-primary/5'
                         }`}>
@@ -732,8 +886,9 @@ export default function SmartQuestionCreatorPage() {
                             updatedOpts[index] = content;
                             updateActiveQuestion({ options: updatedOpts });
                           }}
-                          placeholder={`Nhập nội dung đáp án ${optLabel} (vd: x = 5)...`}
-                          className={`bg-transparent border-none p-0 w-full focus-within:ring-0 focus-within:border-transparent shadow-none !min-h-[40px] flex items-center ${isCorrect ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`}
+                          placeholder={`Nhập đáp án ${optLabel}...`}
+                          className={`bg-transparent border-none p-0 w-full focus-within:ring-0 focus-within:border-transparent shadow-none flex items-center ${isCorrect ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`}
+                          editorClassName="!min-h-0 prose-p:my-0"
                         />
                       </div>
                     </div>
@@ -746,7 +901,7 @@ export default function SmartQuestionCreatorPage() {
                   placeholder="Nhập kết quả của câu hỏi"
                   value={activeQuestion.correctAnswer}
                   onValueChange={(content) => updateActiveQuestion({ correctAnswer: content })}
-                  className="h-[150px]"
+                  className="min-h-[80px]"
                 />
               </div>
             )}
@@ -851,8 +1006,25 @@ export default function SmartQuestionCreatorPage() {
           </div>
 
           </div>
+        ) : (!isEditMode && (
+          <div className="w-full max-w-4xl mx-auto space-y-6">
+            <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                <p className="text-center text-slate-500">Vui lòng nhập JSON hoặc sử dụng chế độ nhập thủ công để bắt đầu.</p>
+            </div>
+            <div className="p-5 bg-gradient-to-br from-primary to-blue-700 rounded-2xl text-white shadow-lg shadow-primary/20">
+              <div className="flex items-center gap-2 mb-3">
+                <Sparkles size={20} className="text-white animate-pulse" />
+                <h4 className="font-bold text-sm uppercase tracking-widest select-none">Quy trình thông minh</h4>
+              </div>
+              <p className="text-xs text-blue-100 leading-relaxed font-medium">
+                AI sẽ tự động bóc tách đề bài, chuyển đổi ký tự sang LaTeX, xác định cấp độ và gợi ý đáp án đúng cùng lời giải chỉ trong vài giây.
+              </p>
+            </div>
+          </div>
+        ))}
 
-        {/* Right Sidebar Column (4 units) styled exactly like the exam creator sidebar */}
+        {/* Right Sidebar Column */}
+        {(!isParsed && !isEditMode) ? null : (
         <div className="lg:col-span-4 space-y-6">
           <div className="sticky top-24 space-y-6">
 
@@ -1002,7 +1174,7 @@ export default function SmartQuestionCreatorPage() {
               </CardContent>
             </Card>
 
-            {/* AI Insight banner styled exactly like "Gợi ý từ AI" in the exam creator */}
+            {/* AI Insight banner */}
             <div className="p-5 bg-gradient-to-br from-primary to-blue-700 rounded-2xl text-white shadow-lg shadow-primary/20">
               <div className="flex items-center gap-2 mb-3">
                 <Sparkles size={20} className="text-white animate-pulse" />
@@ -1015,6 +1187,7 @@ export default function SmartQuestionCreatorPage() {
 
           </div>
         </div>
+        )}
 
       </main>
 

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { 
   Upload, Plus, School, BookOpen, Signal, FolderOpen, 
   Printer, Trash2, Sparkles, LayoutDashboard, 
-  Database, FileText, Users, FilterX, RefreshCw, ChevronLeft, ChevronRight
+  Database, FileText, Users, FilterX, RefreshCw, ChevronLeft, ChevronRight, FileQuestion
 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Checkbox } from '@/components/ui/Checkbox';
@@ -15,18 +15,21 @@ import { QuestionCard } from '@/components/questions/QuestionCard';
 import { Question } from '@/lib/mock-data';
 import { QuestionAdapter } from '@/lib/question-adapter';
 
-const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
 
 export default function QuestionBankPage() {
   const router = useRouter();
   const [selectedGrades, setSelectedGrades] = React.useState<string[]>([]);
   const [selectedSubjects, setSelectedSubjects] = React.useState<string[]>([]);
   const [selectedLevels, setSelectedLevels] = React.useState<string[]>([]);
+  const [selectedType, setSelectedType] = React.useState<string | null>(null);
   const [selectedQs, setSelectedQs] = React.useState<string[]>([]);
 
   const [questions, setQuestions] = React.useState<Question[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [pagination, setPagination] = React.useState({ page: 1, limit: 10, total: 0 });
+
+  const [availableTopics, setAvailableTopics] = React.useState<string[]>([]);
 
   const fetchQuestions = React.useCallback(async (pageToFetch: number = 1) => {
     setLoading(true);
@@ -42,22 +45,38 @@ export default function QuestionBankPage() {
         params.append('grade', gradeInts);
       }
       if (selectedSubjects.length > 0) {
-        // NOTE: Our API filters by topic_id usually, but for now we'll pass topic string if backend supported it or we map it. 
-        // Our backend doesn't support topic name search directly via topic filter, it uses topic_id. 
-        // We might just skip subject filter in API or use search keyword. Let's use `q` for subject name for now.
         params.append('q', selectedSubjects.join(' ')); 
       }
       if (selectedLevels.length > 0) {
         params.append('difficulty_level', selectedLevels.join(','));
       }
+      if (selectedType) {
+        if (selectedType === 'Câu hỏi chùm') {
+          params.append('type_question', 'group');
+        } else {
+          params.append('type', selectedType);
+        }
+      }
 
-      const res = await fetch(`${apiUrl}/v1/questions?${params.toString()}`);
+      const res = await fetch(`${API_BASE_URL}/api/v1/questions?${params.toString()}`);
       if (res.ok) {
         const data = await res.json();
-        const mappedQs = (data.data || []).map((q: any, i: number) => ({
-          ...QuestionAdapter.fromBackendToUI(q),
-          number: (pageToFetch - 1) * pagination.limit + i + 1
-        }));
+        const seenGroupIds = new Set<string>();
+        const mappedQs: Question[] = [];
+        let index = (pageToFetch - 1) * pagination.limit;
+        
+        (data.data || []).forEach((q: any) => {
+          const uiQ = QuestionAdapter.fromBackendToUI(q);
+          if (uiQ.groupId) {
+            if (seenGroupIds.has(uiQ.groupId)) {
+              return;
+            }
+            seenGroupIds.add(uiQ.groupId);
+          }
+          uiQ.number = ++index;
+          mappedQs.push(uiQ);
+        });
+        
         setQuestions(mappedQs);
         if (data.pagination) {
           setPagination(prev => ({ ...prev, ...data.pagination }));
@@ -68,15 +87,31 @@ export default function QuestionBankPage() {
     } finally {
       setLoading(false);
     }
-  }, [selectedGrades, selectedSubjects, selectedLevels, pagination.limit]);
+  }, [selectedGrades, selectedSubjects, selectedLevels, selectedType, pagination.limit]);
 
   React.useEffect(() => {
     fetchQuestions(1);
   }, [fetchQuestions]);
 
+  React.useEffect(() => {
+    if (selectedGrades.length === 1) {
+      const grade = selectedGrades[0] === '10' ? '10' : selectedGrades[0];
+      fetch(`${API_BASE_URL}/api/v1/topics?grade=${grade}`)
+        .then(res => res.json())
+        .then(data => {
+          const topicNames = Array.isArray(data) ? data.map((t: any) => t.name) : [];
+          setAvailableTopics(Array.from(new Set(topicNames)));
+        })
+        .catch(err => console.error("Failed to fetch topics", err));
+    } else {
+      setAvailableTopics([]);
+      setSelectedSubjects([]);
+    }
+  }, [selectedGrades]);
+
   const toggleGrade = (grade: string) => {
     setSelectedGrades(prev =>
-      prev.includes(grade) ? prev.filter(g => g !== grade) : [...prev, grade]
+      prev.includes(grade) ? [] : [grade]
     );
   };
 
@@ -92,6 +127,10 @@ export default function QuestionBankPage() {
     );
   };
 
+  const toggleType = (type: string) => {
+    setSelectedType(prev => prev === type ? null : type);
+  };
+
   const toggleSelectQuestion = (id: string) => {
     setSelectedQs(prev =>
       prev.includes(id) ? prev.filter(qId => qId !== id) : [...prev, id]
@@ -102,11 +141,12 @@ export default function QuestionBankPage() {
     setSelectedGrades([]);
     setSelectedSubjects([]);
     setSelectedLevels([]);
+    setSelectedType(null);
     setSelectedQs([]);
   };
 
   return (
-    <div className="flex flex-col min-h-screen text-slate-900 bg-white font-display">
+    <div className="flex flex-col min-h-screen text-slate-900 bg-slate-50 font-display">
       {/* Header - Styled matching Create Exam page */}
       <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 px-4 md:px-8 py-3">
         <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between">
@@ -184,6 +224,7 @@ export default function QuestionBankPage() {
                   <label key={g} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox
                       checkboxSize="sm"
+                      className="shrink-0"
                       checked={selectedGrades.includes(g)}
                       onChange={() => toggleGrade(g)}
                     />
@@ -193,16 +234,35 @@ export default function QuestionBankPage() {
               </div>
             </Collapsible>
 
-            <Collapsible title="Chuyên đề" icon={<BookOpen className="h-4 w-4" />} open>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-2">
-                {['Số học', 'Số hữu tỉ', 'Đại số', 'Hằng đẳng thức', 'Đa thức', 'Hình học', 'Tứ giác', 'Đường tròn', 'Giải tích'].map(s => (
-                  <label key={s} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+            {availableTopics.length > 0 && (
+              <Collapsible title="Chuyên đề" icon={<BookOpen className="h-4 w-4" />} open>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-2">
+                  {availableTopics.map(s => (
+                    <label key={s} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
+                      <Checkbox
+                        checkboxSize="sm"
+                        className="shrink-0"
+                        checked={selectedSubjects.includes(s)}
+                        onChange={() => toggleSubject(s)}
+                      />
+                      <span className="truncate" title={s}>{s}</span>
+                    </label>
+                  ))}
+                </div>
+              </Collapsible>
+            )}
+
+            <Collapsible title="Loại câu hỏi" icon={<FileQuestion className="h-4 w-4" />} open>
+              <div className="grid grid-cols-1 gap-y-2.5 pt-2">
+                {['Trắc nghiệm', 'Tự luận', 'Câu hỏi chùm'].map(t => (
+                  <label key={t} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox
                       checkboxSize="sm"
-                      checked={selectedSubjects.includes(s)}
-                      onChange={() => toggleSubject(s)}
+                      className="shrink-0"
+                      checked={selectedType === t}
+                      onChange={() => toggleType(t)}
                     />
-                    {s}
+                    {t}
                   </label>
                 ))}
               </div>
@@ -214,6 +274,7 @@ export default function QuestionBankPage() {
                   <label key={l} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox
                       checkboxSize="sm"
+                      className="shrink-0"
                       checked={selectedLevels.includes(l)}
                       onChange={() => toggleLevel(l)}
                     />
@@ -235,7 +296,7 @@ export default function QuestionBankPage() {
         </aside>
 
         {/* Main Work Area */}
-        <main className="flex-1 overflow-y-auto bg-white p-6 pb-32">
+        <main className="flex-1 overflow-y-auto bg-transparent p-6 pb-32">
           <div className="flex flex-col gap-6 w-full">
             {/* Dynamic Question List */}
             <div className="space-y-4">

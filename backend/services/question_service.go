@@ -14,6 +14,7 @@ import (
 )
 
 type QuestionRequest struct {
+	ID              *uint    `json:"id"`
 	TypeQuestion    string   `json:"type_question"`
 	Content         string   `json:"content"`
 	Type            string   `json:"type"`
@@ -165,4 +166,109 @@ func MoveImagesToPermanent(payload *[]QuestionGroupRequest) error {
 	}
 
 	return nil
+}
+
+func UpdateQuestionGroup(db *gorm.DB, groupID uint, payload QuestionGroupRequest) error {
+	wrapper := []QuestionGroupRequest{payload}
+	if err := MoveImagesToPermanent(&wrapper); err != nil {
+		return fmt.Errorf("lỗi trong quá trình di chuyển ảnh: %w", err)
+	}
+	payload = wrapper[0]
+
+	return db.Transaction(func(tx *gorm.DB) error {
+		var group models.QuestionGroup
+		if err := tx.First(&group, groupID).Error; err != nil {
+			return err
+		}
+
+		group.SharedContent = payload.SharedContent
+		if payload.ImageShared != nil {
+			group.ImageShared = payload.ImageShared
+		}
+		if err := tx.Save(&group).Error; err != nil {
+			return err
+		}
+
+		var existingQuestions []models.Question
+		if err := tx.Where("question_group_id = ?", groupID).Find(&existingQuestions).Error; err != nil {
+			return err
+		}
+		
+		existingMap := make(map[uint]models.Question)
+		for _, q := range existingQuestions {
+			existingMap[q.ID] = q
+		}
+
+		processedIDs := make(map[uint]bool)
+
+		for _, qReq := range payload.Questions {
+			tagsBytes, _ := json.Marshal(qReq.Tags)
+			optionsBytes, _ := json.Marshal(qReq.Options)
+
+			if qReq.ID != nil && *qReq.ID != 0 {
+				if existingQ, ok := existingMap[*qReq.ID]; ok {
+					existingQ.TypeQuestion = qReq.TypeQuestion
+					existingQ.Content = qReq.Content
+					existingQ.Type = qReq.Type
+					existingQ.Grade = qReq.Grade
+					existingQ.Topic = qReq.Topic
+					existingQ.DifficultyLevel = qReq.DifficultyLevel
+					existingQ.DifficultyPoint = qReq.DifficultyPoint
+					existingQ.Point = qReq.Point
+					existingQ.Tags = datatypes.JSON(tagsBytes)
+					existingQ.Options = datatypes.JSON(optionsBytes)
+					existingQ.CorrectAnswer = qReq.CorrectAnswer
+					existingQ.SolutionGuide = qReq.SolutionGuide
+					existingQ.Hint = qReq.Hint
+					existingQ.QuickSolveTips = qReq.QuickSolveTips
+					existingQ.GeneralMethod = qReq.GeneralMethod
+					existingQ.Mistakes = qReq.Mistakes
+					if qReq.ImageQuestion != nil {
+						existingQ.ImageQuestion = qReq.ImageQuestion
+					}
+					if qReq.ImageSolution != nil {
+						existingQ.ImageSolution = qReq.ImageSolution
+					}
+					if err := tx.Save(&existingQ).Error; err != nil {
+						return err
+					}
+					processedIDs[*qReq.ID] = true
+				}
+			} else {
+				newQ := models.Question{
+					QuestionGroupID: &group.ID,
+					TypeQuestion:    qReq.TypeQuestion,
+					Content:         qReq.Content,
+					Type:            qReq.Type,
+					Grade:           qReq.Grade,
+					Topic:           qReq.Topic,
+					DifficultyLevel: qReq.DifficultyLevel,
+					DifficultyPoint: qReq.DifficultyPoint,
+					Point:           qReq.Point,
+					Tags:            datatypes.JSON(tagsBytes),
+					Options:         datatypes.JSON(optionsBytes),
+					CorrectAnswer:   qReq.CorrectAnswer,
+					SolutionGuide:   qReq.SolutionGuide,
+					Hint:            qReq.Hint,
+					QuickSolveTips:  qReq.QuickSolveTips,
+					GeneralMethod:   qReq.GeneralMethod,
+					Mistakes:        qReq.Mistakes,
+					ImageQuestion:   qReq.ImageQuestion,
+					ImageSolution:   qReq.ImageSolution,
+				}
+				if err := tx.Create(&newQ).Error; err != nil {
+					return err
+				}
+			}
+		}
+
+		for _, q := range existingQuestions {
+			if !processedIDs[q.ID] {
+				if err := tx.Delete(&q).Error; err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	})
 }

@@ -21,6 +21,7 @@ type QuestionGroup struct {
 type Question struct {
 	ID               uint           `gorm:"primaryKey" json:"id"`
 	QuestionGroupID  *uint          `gorm:"index" json:"question_group_id,omitempty"` // Foreign Key to QuestionGroup
+	QuestionGroup    *QuestionGroup `gorm:"foreignKey:QuestionGroupID;constraint:OnDelete:SET NULL;" json:"question_group,omitempty"`
 	
 	TypeQuestion     string         `gorm:"type:varchar(50);not null;default:'single';check:type_question IN ('group','single')" json:"type_question"` // "single" or "group"
 	

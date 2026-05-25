@@ -110,6 +110,7 @@ func main() {
 
 		// Question Group endpoints
 		v1.GET("/question-groups/:id", questionCtrl.GetQuestionGroup)
+		v1.PUT("/question-groups/:id", questionCtrl.UpdateQuestionGroup)
 		v1.DELETE("/question-groups/:id", questionCtrl.DeleteQuestionGroup)
 
 		// Upload endpoints

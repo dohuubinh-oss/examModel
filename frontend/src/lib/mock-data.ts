@@ -19,11 +19,14 @@ export interface SubQuestion {
 
 export interface Question {
   id: string;
+  groupId?: string;
   number: number;
+  grade?: number;
   topic: string;
   level: QuestionLevel;
   type: QuestionType | 'cluster';
   content: string;
+  image?: string | null;
   options?: Option[];
   solution?: string;
   subQuestions?: SubQuestion[];

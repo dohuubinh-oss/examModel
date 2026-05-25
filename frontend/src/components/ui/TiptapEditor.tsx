@@ -20,9 +20,10 @@ interface TiptapEditorProps {
   onValueChange?: (value: string) => void
   placeholder?: string
   className?: string
+  editorClassName?: string
 }
 
-export function TiptapEditor({ value, onValueChange, placeholder = "Nhập nội dung...", className }: TiptapEditorProps) {
+export function TiptapEditor({ value, onValueChange, placeholder = "Nhập nội dung...", className, editorClassName }: TiptapEditorProps) {
   const [isMounted, setIsMounted] = useState(false)
 
   const editor = useEditor({
@@ -42,7 +43,7 @@ export function TiptapEditor({ value, onValueChange, placeholder = "Nhập nội
     },
     editorProps: {
       attributes: {
-        class: "prose max-w-none focus:outline-none min-h-[100px] text-sm leading-relaxed custom-scrollbar"
+        class: cn("prose max-w-none focus:outline-none min-h-[100px] text-sm leading-relaxed custom-scrollbar", editorClassName)
       }
     }
   })

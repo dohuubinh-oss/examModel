@@ -173,7 +173,7 @@ func (qc *QuestionController) GetQuestions(c *gin.Context) {
 	offset := (page - 1) * limit
 
 	// Fetch data
-	if err := dbQuery.Preload("TopicRel").Offset(offset).Limit(limit).Find(&questions).Error; err != nil {
+	if err := dbQuery.Preload("TopicRel").Preload("QuestionGroup.Questions").Offset(offset).Limit(limit).Find(&questions).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to fetch questions: " + err.Error()})
 		return
 	}
@@ -203,7 +203,7 @@ func (qc *QuestionController) GetQuestion(c *gin.Context) {
 	}
 
 	var question models.Question
-	if err := qc.DB.Preload("TopicRel").First(&question, uint(id)).Error; err != nil {
+	if err := qc.DB.Preload("TopicRel").Preload("QuestionGroup.Questions").First(&question, uint(id)).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Question not found"})
 		} else {
@@ -415,4 +415,26 @@ func (qc *QuestionController) DeleteQuestionGroup(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{"message": "Question group soft-deleted successfully"})
+}
+
+// UpdateQuestionGroup updates a question group and its questions
+func (qc *QuestionController) UpdateQuestionGroup(c *gin.Context) {
+	id, err := strconv.ParseUint(c.Param("id"), 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid group ID"})
+		return
+	}
+
+	var payload services.QuestionGroupRequest
+	if err := c.ShouldBindJSON(&payload); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input data: " + err.Error()})
+		return
+	}
+
+	if err := services.UpdateQuestionGroup(qc.DB, uint(id), payload); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to update question group: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"message": "Question group updated successfully"})
 }

@@ -28,7 +28,19 @@ function CreateExamContent() {
         const res = await fetch(`${apiUrl}/v1/questions?ids=${idsParam}&limit=100`);
         if (res.ok) {
           const data = await res.json();
-          let mappedQs = (data.data || []).map((q: any) => QuestionAdapter.fromBackendToUI(q));
+          const seenGroupIds = new Set<string>();
+          let mappedQs: any[] = [];
+          
+          (data.data || []).forEach((q: any) => {
+            const uiQ = QuestionAdapter.fromBackendToUI(q);
+            if (uiQ.groupId) {
+              if (seenGroupIds.has(uiQ.groupId)) {
+                return;
+              }
+              seenGroupIds.add(uiQ.groupId);
+            }
+            mappedQs.push(uiQ);
+          });
           
           // Sắp xếp: Trắc nghiệm trước Tự luận, Độ khó tăng dần
           mappedQs.sort((a: any, b: any) => {

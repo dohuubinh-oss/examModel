@@ -69,6 +69,15 @@ export interface BackendQuestionOutput {
   image_solution?: string;
   tags?: string[];
   children?: BackendQuestionOutput[];
+  question_group_id?: number;
+  question_group?: BackendQuestionGroup;
+}
+
+export interface BackendQuestionGroup {
+  id: number;
+  shared_content: string;
+  image_shared?: string | null;
+  questions?: BackendQuestionOutput[];
 }
 
 export class QuestionAdapter {
@@ -140,42 +149,72 @@ export class QuestionAdapter {
 
   static fromBackendToUI(backendQ: BackendQuestionOutput): any {
     const isMultipleChoice = backendQ.type === 'Trắc nghiệm';
+
+    // Helper to map options consistently
+    const mapOptions = (q: BackendQuestionOutput) => {
+      const isMC = q.type === 'Trắc nghiệm';
+      return isMC && q.options ? q.options.map((opt: any, idx: number) => {
+        const label = String.fromCharCode(65 + idx); // A, B, C, D
+        const optContent = typeof opt === 'object' && opt !== null ? String(opt.text || opt.content || '') : String(opt || '');
+        const isCorrect = q.correct_answer === optContent || q.correct_answer === opt || q.correct_answer?.startsWith(label);
+        
+        return {
+          id: `${q.id}_opt_${idx}`,
+          label,
+          content: optContent.replace(/^[A-D]\.\s*/, ''), // Remove prefix if it exists in DB
+          isCorrect
+        };
+      }) : [];
+    };
+
+    // If it's a group question and we have preloaded group details, render as a unified cluster
+    if (backendQ.type_question === 'group' && backendQ.question_group) {
+      const group = backendQ.question_group;
+      return {
+        id: backendQ.id.toString(), // Deduplication key
+        groupId: group.id.toString(),
+        number: 1,
+        grade: backendQ.grade,
+        topic: backendQ.TopicRel?.name || backendQ.topic || `Lớp ${backendQ.grade}`,
+        level: backendQ.difficulty_level,
+        difficultyPoint: backendQ.difficulty_point || 0,
+        type: 'cluster',
+        typeString: 'Câu hỏi chùm',
+        content: group.shared_content,
+        image: group.image_shared || null,
+        options: [],
+        solution: '',
+        subQuestions: group.questions ? group.questions.map((child, idx) => ({
+          id: child.id.toString(),
+          number: idx + 1,
+          content: child.content,
+          type: child.type === 'Trắc nghiệm' ? 'multiple_choice' : 'essay',
+          options: mapOptions(child),
+          solution: child.solution_guide
+        })) : []
+      };
+    }
     
     return {
       id: backendQ.id.toString(),
+      groupId: backendQ.question_group_id ? backendQ.question_group_id.toString() : undefined,
       number: 1, // Will be overridden by the list map index
+      grade: backendQ.grade,
       topic: backendQ.TopicRel?.name || backendQ.topic || `Lớp ${backendQ.grade}`,
       level: backendQ.difficulty_level,
       difficultyPoint: backendQ.difficulty_point || 0,
       type: backendQ.type_question === 'group' ? 'cluster' : (isMultipleChoice ? 'multiple_choice' : 'essay'),
       typeString: backendQ.type,
       content: backendQ.content,
-      options: isMultipleChoice && backendQ.options ? backendQ.options.map((opt, idx) => {
-        const label = String.fromCharCode(65 + idx); // A, B, C, D
-        const isCorrect = backendQ.correct_answer === opt || backendQ.correct_answer?.startsWith(label);
-        return {
-          id: `${backendQ.id}_opt_${idx}`,
-          label,
-          content: opt.replace(/^[A-D]\.\s*/, ''), // Remove prefix if it exists in DB
-          isCorrect
-        };
-      }) : [],
+      image: backendQ.image_question || null,
+      options: mapOptions(backendQ),
       solution: backendQ.solution_guide,
       subQuestions: backendQ.children ? backendQ.children.map((child, idx) => ({
         id: child.id.toString(),
         number: idx + 1,
         content: child.content,
         type: child.type === 'Trắc nghiệm' ? 'multiple_choice' : 'essay',
-        options: child.type === 'Trắc nghiệm' && child.options ? child.options.map((opt, oIdx) => {
-          const label = String.fromCharCode(65 + oIdx);
-          const isCorrect = child.correct_answer === opt || child.correct_answer?.startsWith(label);
-          return {
-            id: `${child.id}_opt_${oIdx}`,
-            label,
-            content: opt.replace(/^[A-D]\.\s*/, ''),
-            isCorrect
-          };
-        }) : [],
+        options: mapOptions(child),
         solution: child.solution_guide
       })) : []
     };

@@ -27,6 +27,7 @@ func setupQuestionRouter() *gin.Engine {
 		v1.DELETE("/questions/:id", questionCtrl.DeleteQuestion)
 		
 		v1.GET("/question-groups/:id", questionCtrl.GetQuestionGroup)
+		v1.PUT("/question-groups/:id", questionCtrl.UpdateQuestionGroup)
 		v1.DELETE("/question-groups/:id", questionCtrl.DeleteQuestionGroup)
 	}
 
@@ -168,7 +169,56 @@ func TestQuestionAPI(t *testing.T) {
 		}
 	})
 
-	// 3. Delete group question (Verifies soft delete cascade)
+	// 3. Update Question Group
+	t.Run("PUT /api/v1/question-groups/:id - Update Group", func(t *testing.T) {
+		reqBody := map[string]interface{}{
+			"shared_content": "Chùm câu hỏi đã cập nhật",
+			"questions": []map[string]interface{}{
+				{
+					"id":               group.Questions[0].ID,
+					"type_question":    "single",
+					"content":          "Câu hỏi con 1 đã cập nhật",
+					"type":             "Trắc nghiệm",
+					"grade":            9,
+					"topic":            "Hàm số bậc hai",
+					"difficulty_level": "Nhận biết",
+				},
+				{
+					"type_question":    "single",
+					"content":          "Câu hỏi con mới thêm",
+					"type":             "Trắc nghiệm",
+					"grade":            9,
+					"topic":            "Hàm số bậc hai",
+					"difficulty_level": "Thông hiểu",
+				},
+			},
+		}
+
+		jsonBytes, _ := json.Marshal(reqBody)
+		req, _ := http.NewRequest("PUT", fmt.Sprintf("/api/v1/question-groups/%d", group.ID), bytes.NewBuffer(jsonBytes))
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusOK {
+			t.Fatalf("expected status 200 OK, got %d. Body: %s", w.Code, w.Body.String())
+		}
+
+		var updatedGroup models.QuestionGroup
+		if err := testDB.Preload("Questions").First(&updatedGroup, group.ID).Error; err != nil {
+			t.Fatalf("failed to fetch updated group: %v", err)
+		}
+
+		if updatedGroup.SharedContent != "Chùm câu hỏi đã cập nhật" {
+			t.Errorf("expected SharedContent to be updated, got %s", updatedGroup.SharedContent)
+		}
+		
+		if len(updatedGroup.Questions) != 2 {
+			t.Errorf("expected exactly 2 child questions, got %d", len(updatedGroup.Questions))
+		}
+	})
+
+	// 4. Delete group question (Verifies soft delete cascade)
 	t.Run("DELETE /api/v1/question-groups/:id - Cascade Soft Delete", func(t *testing.T) {
 		req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/question-groups/%d", group.ID), nil)
 		w := httptest.NewRecorder()
