@@ -17,6 +17,10 @@ bin/
 *.so
 *.dylib
 backend/backend
+backend/exam-model-backend
+backend/tmp_app
+backend/public/images/temp/*
+!backend/public/images/temp/.gitkeep
 
 # Docker
 *.log

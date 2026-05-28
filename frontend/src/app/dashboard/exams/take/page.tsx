@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 import { ChevronLeft, ChevronRight, Send, Info, Grid, Sparkles, X, Camera, AlertCircle, CircleDot, Keyboard, Eye, PenTool } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
@@ -29,86 +29,25 @@ interface Question {
   hintSteps: string[];
 }
 
-export default function TakeExamPage() {
+import { useSearchParams } from 'next/navigation';
+
+function TakeExamContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const examId = searchParams.get('id');
 
-  // Mock exam details and questions
-  const examTitle = "Kiểm tra Đại số & Hình học";
-  const examGrade = "Toán Lớp 9";
-
-  const [questions, setQuestions] = React.useState<Question[]>([
-    {
-      id: "q1",
-      number: 1,
-      type: "multiple-choice",
-      category: "Phương trình bậc hai",
-      title: "Giải phương trình bậc hai sau:",
-      content: "Tìm các nghiệm thực phân biệt của phương trình bậc hai sau đây:",
-      equation: "x^2 - 5x + 6 = 0",
-      options: [
-        { letter: "A", content: "x = 2; x = 3" },
-        { letter: "B", content: "x = -2; x = -3" },
-        { letter: "C", content: "x = 1; x = 6" },
-        { letter: "D", content: "x = 5; x = 6" }
-      ],
-      hint: "Chào bạn! Hãy thử phân tích đa thức thành nhân tử hoặc sử dụng biệt thức delta.",
-      hintSteps: [
-        "Hãy tìm hai số có tổng là 5 và tích là 6: (x-2)(x-3) = 0.",
-        "Dùng công thức biệt thức $\\Delta = b^2 - 4ac = (-5)^2 - 4.1.6 = 1 > 0$."
-      ]
-    },
-    {
-      id: "q2",
-      number: 2,
-      type: "essay",
-      category: "Hệ thức lượng trong tam giác",
-      title: "Tính độ dài đường cao trong tam giác vuông:",
-      content: "Cho tam giác $ABC$ vuông tại $A$ có đường cao $AH$. Biết rằng độ dài cạnh $AB = 6cm$ và $AC = 8cm$. Hãy giải chi tiết các yêu cầu sau:\n1. Tính độ dài cạnh huyền $BC$.\n2. Tính độ dài đường cao $AH$.\n3. Tính diện tích tam giác $ABC$.",
-      hint: "Hãy sử dụng định lý Pitago và các hệ thức lượng cơ bản trong tam giác vuông.",
-      hintSteps: [
-        "Cạnh huyền $BC = \\sqrt{AB^2 + AC^2} = \\sqrt{6^2 + 8^2} = 10cm$.",
-        "Áp dụng hệ thức lượng: $AH \\cdot BC = AB \\cdot AC \\Rightarrow AH = \\frac{6 \\cdot 8}{10} = 4.8cm$."
-      ]
-    },
-    {
-      id: "q3",
-      number: 3,
-      type: "multiple-choice",
-      category: "Hệ thức lượng",
-      title: "Tìm hệ thức đúng trong tam giác vuông:",
-      content: "Cho tam giác $ABC$ vuông tại $A$ có đường cao $AH$. Hệ thức nào sau đây là hệ thức lượng đúng?",
-      equation: "AH^2 = BH \\cdot CH",
-      options: [
-        { letter: "A", content: "AH^2 = AB \\cdot AC" },
-        { letter: "B", content: "AH^2 = BH \\cdot CH" },
-        { letter: "C", content: "AB^2 = BH \\cdot BC" },
-        { letter: "D", content: "Cả B và C đều đúng" }
-      ],
-      hint: "Nhớ lại các công thức liên quan đến đường cao và hình chiếu trong tam giác vuông.",
-      hintSteps: [
-        "Bình phương đường cao bằng tích hai hình chiếu của hai cạnh góc vuông trên cạnh huyền.",
-        "Bình phương mỗi cạnh góc vuông bằng tích của cạnh huyền và hình chiếu của cạnh góc vuông đó."
-      ]
-    }
-  ]);
-
+  // Real exam details and questions
+  const [examTitle, setExamTitle] = React.useState("Đang tải...");
+  const [examGrade, setExamGrade] = React.useState("");
+  const [questions, setQuestions] = React.useState<Question[]>([]);
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [errorMsg, setErrorMsg] = React.useState('');
   const [currentIndex, setCurrentIndex] = React.useState<number>(0);
-  const activeQuestion = questions[currentIndex];
-
-  // User answers state: questionId -> answer (string for MC, long text for essay)
   const [answers, setAnswers] = React.useState<Record<string, string>>({});
-  
-  // Flagged questions state: questionId -> boolean
   const [flagged, setFlagged] = React.useState<Record<string, boolean>>({});
-
-  // Side panels toggle
   const [isAiHintOpen, setIsAiHintOpen] = React.useState<boolean>(false);
   const [isQMapOpen, setIsQMapOpen] = React.useState<boolean>(false);
-
-  // Time remaining (in seconds, starts at 45 minutes = 2700 seconds)
   const [timeLeft, setTimeLeft] = React.useState<number>(2700);
-
-  // Success overlays
   const [showSubmitSuccess, setShowSubmitSuccess] = React.useState<boolean>(false);
   
   // MathLive Hybrid Insertion Modal state
@@ -125,6 +64,106 @@ export default function TakeExamPage() {
     return () => clearInterval(timer);
   }, [timeLeft]);
 
+
+  React.useEffect(() => {
+    if (!examId) {
+      setErrorMsg('Không tìm thấy mã đề thi (ID).');
+      setIsLoading(false);
+      return;
+    }
+
+    const fetchExam = async () => {
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/exams/${examId}`);
+        if (!res.ok) {
+          throw new Error('Lỗi tải dữ liệu đề thi');
+        }
+        const data = await res.json();
+        
+        setExamTitle(data.title);
+        setExamGrade(`Lớp ${data.grade}`);
+        setTimeLeft(data.duration * 60);
+
+        // Map backend Questions to frontend Question interface
+        const mappedQuestions: Question[] = (data.questions || []).map((q: any, idx: number) => {
+          let parsedOptions: { letter: string; content: string }[] = [];
+          if (q.options) {
+            try {
+              // try to parse options if it's a string, or use as is if array
+              const opts = typeof q.options === 'string' ? JSON.parse(q.options) : q.options;
+              if (Array.isArray(opts)) {
+                parsedOptions = opts.map((opt: any, i: number) => {
+                  if (typeof opt === 'object' && opt !== null) {
+                    return {
+                      letter: opt.key || String.fromCharCode(65 + i),
+                      content: opt.text || opt.content || ''
+                    };
+                  }
+                  return {
+                    letter: String.fromCharCode(65 + i),
+                    content: String(opt)
+                  };
+                });
+              }
+            } catch (e) {
+              console.error("Parse options error", e);
+            }
+          }
+
+          return {
+            id: String(q.id),
+            number: idx + 1,
+            type: q.type === 'Tự luận' ? 'essay' : 'multiple-choice',
+            category: q.topic || 'Chung',
+            title: `Câu ${idx + 1}:`,
+            content: q.content,
+            equation: '', 
+            options: parsedOptions,
+            hint: q.hint || 'Gợi ý đang được cập nhật...',
+            hintSteps: q.solution_guide ? [q.solution_guide] : []
+          };
+        });
+
+        setQuestions(mappedQuestions);
+      } catch (err: any) {
+        setErrorMsg(err.message || 'Lỗi không xác định');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchExam();
+  }, [examId]);
+
+  
+  if (isLoading) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="flex flex-col items-center gap-4 text-slate-500">
+          <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-primary"></div>
+          <p className="font-medium text-sm">Đang chuẩn bị đề thi...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (errorMsg || questions.length === 0) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-slate-50 dark:bg-slate-950">
+        <div className="bg-white dark:bg-slate-900 p-8 rounded-2xl shadow-xl max-w-md w-full text-center border border-slate-100 dark:border-slate-800">
+          <h2 className="text-xl font-bold text-slate-800 dark:text-slate-100 mb-2">Không thể tải đề thi</h2>
+          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">{errorMsg || 'Đề thi không có câu hỏi nào.'}</p>
+          <Button onClick={() => router.push('/dashboard/exams')} className="w-full">
+            Quay lại danh sách
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  const activeQuestion = questions[currentIndex];
+  
+
   // Format seconds to MM:SS
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
@@ -134,8 +173,8 @@ export default function TakeExamPage() {
 
   // Helper to determine question status for QNode
   const getQuestionStatus = (qId: string, index: number): QNodeStatus => {
-    if (index === currentIndex) return 'current';
     if (flagged[qId]) return 'flagged';
+    if (index === currentIndex) return 'current';
     if (answers[qId] && answers[qId].trim() !== '') return 'done';
     return 'unfinished';
   };
@@ -273,7 +312,11 @@ export default function TakeExamPage() {
               <div className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="px-3 py-1 bg-primary/10 text-primary text-sm font-bold rounded-lg uppercase">
+                    <span className={`px-3 py-1 text-sm font-bold rounded-lg uppercase transition-colors ${
+                      flagged[activeQuestion.id]
+                        ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-500'
+                        : 'bg-primary/10 text-primary'
+                    }`}>
                       Câu hỏi {activeQuestion.number}
                     </span>
                     <span className="text-slate-400 dark:text-slate-600 text-sm italic">• {activeQuestion.category}</span>
@@ -305,9 +348,6 @@ export default function TakeExamPage() {
                   </div>
                 </div>
 
-                <h2 className="text-2xl font-medium text-slate-800 dark:text-slate-100 leading-relaxed">
-                  {activeQuestion.title}
-                </h2>
 
                 <div className="prose prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 text-lg leading-relaxed">
                   <Latex text={activeQuestion.content} />
@@ -348,7 +388,11 @@ export default function TakeExamPage() {
             <div className="max-w-xl ml-auto">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-2">
-                  <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 text-xs font-semibold uppercase tracking-wider rounded-lg">
+                  <span className={`px-3 py-1 text-xs font-semibold uppercase tracking-wider rounded-lg transition-colors ${
+                    flagged[activeQuestion.id]
+                      ? 'bg-amber-100 text-amber-600 dark:bg-amber-900/40 dark:text-amber-500'
+                      : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+                  }`}>
                     Bài tập tự luận #{activeQuestion.number}
                   </span>
                   <span className="text-slate-400 dark:text-slate-600 text-xs italic">• {activeQuestion.category}</span>
@@ -379,9 +423,8 @@ export default function TakeExamPage() {
                   </Button>
                 </div>
               </div>
-
-              <h1 className="text-2xl font-bold mb-6">{activeQuestion.title}</h1>
               
+
               <div className="prose prose-slate dark:prose-invert max-w-none text-slate-600 dark:text-slate-400 text-lg leading-relaxed mb-8">
                 <Latex text={activeQuestion.content} />
               </div>
@@ -692,6 +735,7 @@ export default function TakeExamPage() {
                     key={q.id}
                     number={q.number}
                     status={getQuestionStatus(q.id, idx)}
+                    isCurrent={idx === currentIndex}
                     onClick={() => {
                       setCurrentIndex(idx);
                       setIsQMapOpen(false);
@@ -834,5 +878,13 @@ export default function TakeExamPage() {
       )}
 
     </div>
+  );
+}
+
+export default function TakeExamPage() {
+  return (
+    <Suspense fallback={<div className="flex h-screen items-center justify-center text-slate-500 font-medium">Đang khởi tạo bài thi...</div>}>
+      <TakeExamContent />
+    </Suspense>
   );
 }

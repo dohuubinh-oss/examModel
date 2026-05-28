@@ -28,7 +28,6 @@ export interface ExamItem {
   grade: string;            // e.g. "10", "11", "12"
   questionsCount: number;   // e.g. 50
   duration: string;         // e.g. "90 phút"
-  status: ExamStatus;
   iconType: ExamIconType;
 }
 
@@ -48,48 +47,7 @@ const getExamIcon = (type: ExamIconType): LucideIcon => {
   }
 };
 
-// 1. StatusBadge Component
-export interface StatusBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
-  status: ExamStatus;
-}
-
-export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className, ...props }) => {
-  const statusStyles = {
-    published: {
-      bg: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400',
-      dot: 'bg-emerald-500',
-      text: 'Đã xuất bản'
-    },
-    draft: {
-      bg: 'bg-slate-100 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
-      dot: 'bg-slate-400',
-      text: 'Nháp'
-    },
-    ended: {
-      bg: 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-400',
-      dot: 'bg-red-500',
-      text: 'Đã kết thúc'
-    }
-  };
-
-  const current = statusStyles[status];
-
-  return (
-    <span
-      className={cn(
-        "inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium",
-        current.bg,
-        className
-      )}
-      {...props}
-    >
-      <span className={cn("w-1.5 h-1.5 rounded-full mr-1.5 shrink-0", current.dot)} />
-      {current.text}
-    </span>
-  );
-};
-
-// 2. GradeBadge Component
+// 1. GradeBadge Component
 export interface GradeBadgeProps extends React.HTMLAttributes<HTMLSpanElement> {
   grade: string;
 }
@@ -108,12 +66,10 @@ export const GradeBadge: React.FC<GradeBadgeProps> = ({ grade, className, ...pro
   );
 };
 
-// 3. ExamRow Component
+// 2. ExamRow Component
 export interface ExamRowProps extends Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onCopy'> {
   exam: ExamItem;
   theme?: 'amber' | 'blue';
-  onShare?: (exam: ExamItem) => void;
-  onCopy?: (exam: ExamItem) => void;
   onEdit?: (exam: ExamItem) => void;
   onDelete?: (exam: ExamItem) => void;
   onTake?: (exam: ExamItem) => void;
@@ -123,8 +79,6 @@ export const ExamRow: React.FC<ExamRowProps> = ({
   exam,
   theme = 'amber',
   className,
-  onShare,
-  onCopy,
   onEdit,
   onDelete,
   onTake,
@@ -184,11 +138,6 @@ export const ExamRow: React.FC<ExamRowProps> = ({
         {exam.duration}
       </td>
 
-      {/* Status */}
-      <td className="px-6 py-4">
-        <StatusBadge status={exam.status} />
-      </td>
-
       {/* Actions */}
       <td className="px-6 py-4 text-right">
         <div className="flex items-center justify-end gap-1">
@@ -198,20 +147,6 @@ export const ExamRow: React.FC<ExamRowProps> = ({
             title="Làm bài thi"
           >
             <Play className="h-4.5 w-4.5 fill-current" />
-          </button>
-          <button 
-            onClick={() => onShare?.(exam)}
-            className={cn("p-2 text-slate-400 dark:text-slate-500 rounded-lg transition-all", style.actionHover)} 
-            title="Chia sẻ"
-          >
-            <Share2 className="h-4.5 w-4.5" />
-          </button>
-          <button 
-            onClick={() => onCopy?.(exam)}
-            className={cn("p-2 text-slate-400 dark:text-slate-500 rounded-lg transition-all", style.actionHover)} 
-            title="Nhân bản"
-          >
-            <Copy className="h-4.5 w-4.5" />
           </button>
           <button 
             onClick={() => onEdit?.(exam)}
@@ -409,7 +344,6 @@ export const ExamTable: React.FC<ExamTableProps> = ({
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Khối lớp</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Số câu hỏi</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-center">Thời gian</th>
-              <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider">Trạng thái</th>
               <th className="px-6 py-4 text-xs font-bold text-slate-500 uppercase tracking-wider text-right">Thao tác</th>
             </tr>
           </thead>
@@ -419,8 +353,6 @@ export const ExamTable: React.FC<ExamTableProps> = ({
                 key={exam.id}
                 exam={exam}
                 theme={theme}
-                onShare={onShare}
-                onCopy={onCopy}
                 onEdit={onEdit}
                 onDelete={onDelete}
                 onTake={onTake}
@@ -428,7 +360,7 @@ export const ExamTable: React.FC<ExamTableProps> = ({
             ))}
             {exams.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-sm text-slate-400">
+                <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-400">
                   Không tìm thấy đề thi nào phù hợp.
                 </td>
               </tr>

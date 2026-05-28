@@ -16,6 +16,7 @@ export interface QuestionCardProps {
   onCheckChange?: (checked: boolean) => void;
   onRegenerate?: (questionId: string) => void;
   isSubQuestion?: boolean;
+  onDelete?: (id: string, type: string, groupId?: string) => void;
 }
 
 export const QuestionCardSingle: React.FC<QuestionCardProps> = ({
@@ -27,6 +28,7 @@ export const QuestionCardSingle: React.FC<QuestionCardProps> = ({
   onCheckChange,
   onRegenerate,
   isSubQuestion = false,
+  onDelete,
 }) => {
   const isTeacher = mode !== 'student';
   const router = useRouter();
@@ -74,7 +76,7 @@ export const QuestionCardSingle: React.FC<QuestionCardProps> = ({
         {/* Card Content for Single Questions (Choices or Solutions) */}
         <div>
           {question.type === 'multiple_choice' ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {question.options?.map((opt) => {
                 const isSelected = selectedOptionId === opt.id;
                 const showAsCorrect = isTeacher && opt.isCorrect;
@@ -83,14 +85,24 @@ export const QuestionCardSingle: React.FC<QuestionCardProps> = ({
                 return (
                   <div
                     key={opt.id}
-                    className={`text-sm p-3 border border-slate-100 rounded bg-white transition-all flex items-center justify-between ${
-                      showAsCorrect ? 'font-bold text-primary' : 'text-slate-700'
+                    onClick={() => {
+                      if (!isTeacher && onOptionSelect) {
+                        onOptionSelect(question.id, opt.id);
+                      }
+                    }}
+                    className={`text-sm p-3 border rounded-xl transition-all flex items-center justify-between ${
+                      highlight 
+                        ? 'border-primary/20 bg-primary/5 shadow-sm text-primary' 
+                        : isTeacher 
+                          ? 'border-slate-200 cursor-default opacity-90 bg-white text-slate-700'
+                          : 'border-slate-200 hover:border-primary/50 cursor-pointer bg-white text-slate-700'
                     }`}
                   >
-                    <span className="flex-1 flex gap-1">
-                      <span>{opt.label}.</span> <Latex text={opt.content} />
+                    <span className="flex-1 flex gap-2">
+                      <span className={`font-bold ${highlight ? 'text-primary' : 'text-slate-800'}`}>{opt.label}.</span>
+                      <Latex text={opt.content} className={highlight ? 'font-medium' : ''} />
                     </span>
-                    {showAsCorrect && <Check className="text-primary shrink-0" size={16} />}
+                    {showAsCorrect && <CheckCircle2 className="text-primary shrink-0 ml-2 animate-fade-in" size={18} />}
                   </div>
                 );
               })}
@@ -201,7 +213,13 @@ export const QuestionCardSingle: React.FC<QuestionCardProps> = ({
                   className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Chỉnh sửa">
                   <Edit3 size={16} />
                 </button>
-                <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all" title="Xóa">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(question.id, question.type, question.groupId);
+                  }}
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all" title="Xóa"
+                >
                   <Trash2 size={16} />
                 </button>
               </div>
@@ -244,28 +262,19 @@ export const QuestionCardSingle: React.FC<QuestionCardProps> = ({
                           onOptionSelect(question.id, opt.id);
                         }
                       }}
-                      className={`flex items-center gap-3 p-3 rounded-xl border transition-all ${
+                      className={`text-sm p-3 border rounded-xl transition-all flex items-center justify-between ${
                         highlight 
-                          ? 'border-primary/20 bg-primary/5 shadow-sm' 
+                          ? 'border-primary/20 bg-primary/5 shadow-sm text-primary' 
                           : isTeacher 
-                            ? 'border-slate-200 cursor-default opacity-85 bg-white'
-                            : 'border-slate-200 hover:border-primary/50 cursor-pointer bg-white'
+                            ? 'border-slate-200 cursor-default opacity-90 bg-white text-slate-700'
+                            : 'border-slate-200 hover:border-primary/50 cursor-pointer bg-white text-slate-700'
                       }`}
                     >
-                      <span className={`rounded-full w-6 h-6 flex items-center justify-center p-0 shrink-0 font-bold text-[10px] transition-colors ${
-                        highlight 
-                          ? 'bg-primary text-white' 
-                          : 'bg-slate-100 text-slate-600'
-                      }`}>
-                        {opt.label}
+                      <span className="flex-1 flex gap-2">
+                        <span className={`font-bold ${highlight ? 'text-primary' : 'text-slate-800'}`}>{opt.label}.</span>
+                        <Latex text={opt.content} className={highlight ? 'font-medium' : ''} />
                       </span>
-                      <Latex 
-                        className={`font-display text-sm transition-colors ${
-                          highlight ? 'text-primary font-semibold' : 'text-slate-700'
-                        }`} 
-                        text={opt.content}
-                      />
-                      {showAsCorrect && <CheckCircle2 className="text-primary ml-auto shrink-0 animate-fade-in" size={18} />}
+                      {showAsCorrect && <CheckCircle2 className="text-primary shrink-0 ml-2 animate-fade-in" size={18} />}
                     </div>
                   );
                 })}

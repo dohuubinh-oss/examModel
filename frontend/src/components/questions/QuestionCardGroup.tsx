@@ -14,6 +14,7 @@ export interface QuestionCardGroupProps {
   isChecked?: boolean;
   onCheckChange?: (checked: boolean) => void;
   onRegenerate?: (questionId: string) => void;
+  onDelete?: (id: string, type: string, groupId?: string) => void;
 }
 
 export const QuestionCardGroup: React.FC<QuestionCardGroupProps> = ({
@@ -22,6 +23,7 @@ export const QuestionCardGroup: React.FC<QuestionCardGroupProps> = ({
   isChecked = false,
   onCheckChange,
   onRegenerate,
+  onDelete,
 }) => {
   const isTeacher = mode !== 'student';
   const router = useRouter();
@@ -127,7 +129,13 @@ export const QuestionCardGroup: React.FC<QuestionCardGroupProps> = ({
                   className="p-1.5 text-slate-400 hover:text-primary hover:bg-primary/10 rounded transition-all" title="Chỉnh sửa">
                   <Edit3 size={16} />
                 </button>
-                <button className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all" title="Xóa">
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete?.(question.id, question.type, question.groupId);
+                  }}
+                  className="p-1.5 text-slate-400 hover:text-red-500 hover:bg-red-500/10 rounded transition-all" title="Xóa"
+                >
                   <Trash2 size={16} />
                 </button>
               </div>

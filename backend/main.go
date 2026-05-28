@@ -113,6 +113,25 @@ func main() {
 		v1.PUT("/question-groups/:id", questionCtrl.UpdateQuestionGroup)
 		v1.DELETE("/question-groups/:id", questionCtrl.DeleteQuestionGroup)
 
+		// Exam endpoints
+		examCtrl := controllers.NewExamController(DB)
+		v1.GET("/exams", examCtrl.GetExams)
+		v1.GET("/exams/:id", examCtrl.GetExamByID)
+		v1.POST("/exams", examCtrl.CreateExam)
+		v1.DELETE("/exams/:id", examCtrl.DeleteExam)
+
+		// User endpoints
+		userCtrl := controllers.NewUserController(DB)
+		v1.GET("/users", userCtrl.GetUsers)
+		v1.POST("/users/seed", userCtrl.SeedUsers)
+
+		// Auth endpoints
+		authCtrl := controllers.NewAuthController(DB)
+		authGroup := v1.Group("/auth")
+		authGroup.POST("/register", authCtrl.Register)
+		authGroup.POST("/login", authCtrl.Login)
+		authGroup.POST("/google", authCtrl.GoogleLogin)
+
 		// Upload endpoints
 		uploadCtrl := controllers.NewUploadController()
 		v1.POST("/upload/temp", uploadCtrl.UploadQuestionImageTemp)

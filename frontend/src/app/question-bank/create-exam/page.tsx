@@ -1,3 +1,4 @@
+// TODO: Trang này đã bị thay thế bởi /dashboard/exams/create. Xóa file/folder này sau khi luồng mới hoạt động ổn định.
 'use client';
 
 import React, { useEffect, useState, Suspense } from 'react';

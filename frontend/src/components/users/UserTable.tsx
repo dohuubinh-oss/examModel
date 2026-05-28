@@ -85,10 +85,21 @@ export const StatusIndicator: React.FC<StatusIndicatorProps> = ({
       text: 'text-rose-600 dark:text-rose-400',
       dot: 'bg-rose-500',
       labelText: 'Bị khóa'
+    },
+    blocked: {
+      text: 'text-rose-600 dark:text-rose-400',
+      dot: 'bg-rose-500',
+      labelText: 'Bị khóa'
+    },
+    inactive: {
+      text: 'text-slate-600 dark:text-slate-400',
+      dot: 'bg-slate-500',
+      labelText: 'Vô hiệu hóa'
     }
   };
 
-  const current = statusStyles[status];
+  // Fallback to active if unknown
+  const current = statusStyles[status as keyof typeof statusStyles] || statusStyles.active;
 
   return (
     <span

@@ -23,7 +23,8 @@ export default function QuestionBankPage() {
   const [selectedSubjects, setSelectedSubjects] = React.useState<string[]>([]);
   const [selectedLevels, setSelectedLevels] = React.useState<string[]>([]);
   const [selectedType, setSelectedType] = React.useState<string | null>(null);
-  const [selectedQs, setSelectedQs] = React.useState<string[]>([]);
+  const [selectedQs, setSelectedQs] = React.useState<Question[]>([]);
+  const [isEditMode, setIsEditMode] = React.useState(false);
 
   const [questions, setQuestions] = React.useState<Question[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -94,6 +95,31 @@ export default function QuestionBankPage() {
   }, [fetchQuestions]);
 
   React.useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const searchParams = new URLSearchParams(window.location.search);
+      const editExam = searchParams.get('editExam') === 'true';
+      const qIdsParam = searchParams.get('qIds');
+
+      if (editExam && qIdsParam) {
+        setIsEditMode(true);
+        fetch(`${API_BASE_URL}/api/v1/questions?ids=${qIdsParam}&limit=100`)
+          .then(res => res.json())
+          .then(data => {
+            const mappedQs: Question[] = [];
+            let idx = 0;
+            (data.data || []).forEach((q: any) => {
+              const uiQ = QuestionAdapter.fromBackendToUI(q);
+              uiQ.number = ++idx;
+              mappedQs.push(uiQ);
+            });
+            setSelectedQs(mappedQs);
+          })
+          .catch(err => console.error("Failed to fetch initial selected questions:", err));
+      }
+    }
+  }, []);
+
+  React.useEffect(() => {
     if (selectedGrades.length === 1) {
       const grade = selectedGrades[0] === '10' ? '10' : selectedGrades[0];
       fetch(`${API_BASE_URL}/api/v1/topics?grade=${grade}`)
@@ -131,9 +157,11 @@ export default function QuestionBankPage() {
     setSelectedType(prev => prev === type ? null : type);
   };
 
-  const toggleSelectQuestion = (id: string) => {
+  const toggleSelectQuestion = (q: Question) => {
     setSelectedQs(prev =>
-      prev.includes(id) ? prev.filter(qId => qId !== id) : [...prev, id]
+      prev.some(item => item.id === q.id) 
+        ? prev.filter(item => item.id !== q.id) 
+        : [...prev, q]
     );
   };
 
@@ -143,6 +171,50 @@ export default function QuestionBankPage() {
     setSelectedLevels([]);
     setSelectedType(null);
     setSelectedQs([]);
+  };
+
+  const handleDeleteQuestion = async (id: string, type: string, groupId?: string) => {
+    if (!window.confirm('Bạn có chắc chắn muốn xóa câu hỏi này không?')) return;
+    
+    try {
+      const isCluster = type === 'cluster';
+      const targetId = isCluster && groupId ? groupId : id;
+      const endpoint = isCluster 
+        ? `${API_BASE_URL}/api/v1/question-groups/${targetId}`
+        : `${API_BASE_URL}/api/v1/questions/${targetId}`;
+
+      const res = await fetch(endpoint, {
+        method: 'DELETE',
+      });
+
+      if (res.ok) {
+        // Tải lại danh sách sau khi xóa thành công
+        fetchQuestions(pagination.page);
+        // Bỏ chọn câu hỏi nếu đang được chọn
+        setSelectedQs(prev => prev.filter(item => item.id !== id));
+      } else {
+        alert('Có lỗi xảy ra khi xóa câu hỏi. Vui lòng thử lại sau.');
+      }
+    } catch (error) {
+      console.error('Failed to delete question:', error);
+      alert('Có lỗi kết nối. Vui lòng kiểm tra lại mạng.');
+    }
+  };
+
+  const handleCreateExam = () => {
+    if (selectedQs.length < 7) {
+      alert('Vui lòng chọn ít nhất 7 câu hỏi để tạo đề thi.');
+      return;
+    }
+
+    const grades = new Set(selectedQs.map(q => q.grade));
+    if (grades.size > 1) {
+      alert('Tất cả các câu hỏi được chọn phải thuộc cùng một khối lớp (grade).');
+      return;
+    }
+
+    const ids = selectedQs.map(q => q.id).join(',');
+    router.push(`/dashboard/exams/create?qIds=${ids}`);
   };
 
   return (
@@ -160,7 +232,7 @@ export default function QuestionBankPage() {
             </button>
             <div>
               <h1 className="text-lg font-bold leading-tight">Quản lý ngân hàng câu hỏi</h1>
-              <p className="text-xs text-slate-500">Toán học THPT • Tổng số: {pagination.total} câu hỏi</p>
+              <p className="text-xs text-slate-500">Toán học THCS • Tổng số: {pagination.total} câu hỏi</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -174,16 +246,10 @@ export default function QuestionBankPage() {
             <Button 
               variant="default" 
               className="shadow-md shadow-primary/20"
-              onClick={() => {
-                if (selectedQs.length > 0) {
-                  router.push(`/question-bank/create-exam?ids=${selectedQs.join(',')}`);
-                } else {
-                  router.push('/question-bank/create-exam');
-                }
-              }}
+              onClick={handleCreateExam}
             >
               <Plus size={20} />
-              Tạo đề thi
+              {isEditMode ? 'Cập nhật đề thi' : 'Tạo đề thi'}
             </Button>
           </div>
         </div>
@@ -313,8 +379,9 @@ export default function QuestionBankPage() {
                     key={q.id}
                     question={q}
                     mode="teacher"
-                    isChecked={selectedQs.includes(q.id)}
-                    onCheckChange={() => toggleSelectQuestion(q.id)}
+                    isChecked={selectedQs.some(item => item.id === q.id)}
+                    onCheckChange={() => toggleSelectQuestion(q)}
+                    onDelete={handleDeleteQuestion}
                   />
                 ))
               ) : (
@@ -368,7 +435,7 @@ export default function QuestionBankPage() {
           {
             label: 'Tạo đề thi',
             icon: <Plus className="h-3.5 w-3.5" />,
-            onClick: () => router.push(`/question-bank/create-exam?ids=${selectedQs.join(',')}`)
+            onClick: handleCreateExam
           },
           {
             label: 'Lưu vào thư mục',

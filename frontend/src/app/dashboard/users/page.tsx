@@ -12,7 +12,8 @@ import {
   LayoutDashboard,
   Database,
   FileText,
-  Users
+  Users,
+  RefreshCw
 } from 'lucide-react';
 
 // UI components
@@ -33,64 +34,37 @@ export default function UserManagementPage() {
   const [currentPage, setCurrentPage] = React.useState<number>(1);
   const itemsPerPage = 5;
 
-  // Mock database of users for realistic dynamic filtering and search
-  const mockUsers: UserItem[] = React.useMemo(() => [
-    {
-      id: "user1",
-      name: "Nguyễn Văn An",
-      email: "an.nguyen@student.edu.vn",
-      avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuCjkU3uLAVacqKFDVSrWvAchNgIwXaxak9xuK4XVCf4BYXd9yH9d5P8WTFxPrzYvQgBh_9qphd6ey_bGrjXTTvavr8JNB3vCobxaF9Xnu7IvK4VFNxuaHA4sBdKhkV4px-7l66gTHKkXV6JbFCAgoshfCRI_u_a7UoVbYZU2G0QB2fhUFkWf_Ea-gA28mwNyWwwlPzlJdnksvCWGRE1RuXYR8BtSFOwwMc7MqY06FeLavosHXYkcFJwvmkTCDgAUZPKTv2_h97XL5Eq",
-      role: "student",
-      grade: "Lớp 9A1",
-      joinDate: "12/05/2023",
-      status: "active",
-      hasPulse: true
-    },
-    {
-      id: "user2",
-      name: "Trần Thị Bình",
-      email: "binh.tt@mathed.vn",
-      avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuAOSjyIOZUILgfSFoipgpCmU0_sWtprapzUJJbdqDkjn993pE4NB53mid5rZJs6Jh8Glcwp-qtxU6OaXb4BP_Cp-2_G1axysKkjGbI_O8BIJ6xt2qN68UnWmJSvhIPK2Hm5ueRAmwQ4moMCUf9w6mH4X4A8Gt6c_l0l7tkcRP7j621vsKcoOapXa267OGqnkHgCHwu5-JpeunIpBaM3rMA82lpuZUBBqU3qNe-hNSuq8RzNuZ0gGZ-t5mDQIvdt4HXX5YfwHSMK7Syx",
-      role: "teacher",
-      grade: "Toán học",
-      joinDate: "02/01/2023",
-      status: "active",
-      hasPulse: false
-    },
-    {
-      id: "user3",
-      name: "Lê Công Danh",
-      email: "danh.lc@student.edu.vn",
-      avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuC0aPR0dT5v8nP-PM-39UXExh0YeHX4p-P5Yf-fTYseqh2z9e3ZVSZMuv6eJnZN98htW8MRDJX63P3A4kucTPhhRV2ijpuVeFWJdHypoGE_htNsXcrpgMtxm_w6ozo7vEzbPpgu2tyXge9TCd81g4DBX1006t5TrxBbUpKtOOklo7mtncO4MkvljV-9fV9ybu6IS9TtgXS6Bu_7Ad6D8HZzFLLDlXDYMVJ3_ZyCt7Oh_u9UYmXDQfuNQfrD7QnsbSeJcV1C9BFqHoBQ",
-      role: "student",
-      grade: "Lớp 5C",
-      joinDate: "15/08/2023",
-      status: "locked",
-      hasPulse: false
-    },
-    {
-      id: "user4",
-      name: "Phạm Minh Đức",
-      email: "duc.pm@mathed.vn",
-      avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDNJnqcgvB5CNg7alyy7McDAcMORJkg4mVGwQI6nCEmf6ecmSnfDCq1d7AaQ0nTTpEPUmsorr7TLX-VqkYh2-I0_Kg1wEYfgu-PVkJjJ4-WdKdevaJOHu3QPA1wXCPpQs-ruYP3ZTdhCQ4tw9o7QsWh_TYrmzVof7lY2xg_jD6UsGKAxM1HviTCLqlYjv11sWvC5Uav3Opt4b_y0e-Tv3-0LmPJwcokU8SkRlrRWkU6RfmYcWbOsiNf2GOZAQydxg10zspoI0TNepWW",
-      role: "admin",
-      grade: "—",
-      joinDate: "20/12/2022",
-      status: "active",
-      hasPulse: false
-    },
-    {
-      id: "user5",
-      name: "Hoàng Thu Hà",
-      email: "ha.ht@student.edu.vn",
-      avatarUrl: "https://lh3.googleusercontent.com/aida-public/AB6AXuDu1qOUC95LwaE0AojL8_i2ICCv8vbM-6rrPNqraV43NeX9d5Wp9UHkwb17fJAbGCY9bwlKeE7j_MHiqCw6kYQvUhBnGj8TS3z3fbN3a5tHgxOHu_zPk3-9oz7Q7Gyo47P9sNRuin3goL1CLbT9-WlXHxeTKTzUlxoy91pfPQTyFZTGEMaUf7dUuYqFzxwU0QiqcEK9ZBMWMMqh8y1bLFIhIRvKrr7VqWy2sF6VtwbjfxF7Dvcdcp6-2KCzF9wj9t6LYcy1jiOcgqtT",
-      role: "student",
-      grade: "Luyện thi 10",
-      joinDate: "10/11/2023",
-      status: "active",
-      hasPulse: false
-    }
-  ], []);
+  const [users, setUsers] = React.useState<UserItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+
+  React.useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+        const res = await fetch(`${API_BASE_URL}/api/v1/users`);
+        if (res.ok) {
+          const data = await res.json();
+          const mappedUsers = (data.data || []).map((u: any) => ({
+            id: u.id.toString(),
+            name: u.full_name,
+            email: u.email || '',
+            avatarUrl: u.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(u.full_name)}&background=random`,
+            role: u.role,
+            grade: u.grade ? `Lớp ${u.grade}` : (u.role === 'teacher' ? 'Giáo viên' : '—'),
+            joinDate: new Date(u.created_at).toLocaleDateString('vi-VN'),
+            status: u.status,
+            hasPulse: u.status === 'active'
+          }));
+          setUsers(mappedUsers);
+        }
+      } catch (err) {
+        console.error("Failed to fetch users", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchUsers();
+  }, []);
 
   // Filter Handlers
   const toggleRole = (role: string) => {
@@ -116,7 +90,7 @@ export default function UserManagementPage() {
 
   // Real-time client-side filter computation
   const filteredUsers = React.useMemo(() => {
-    return mockUsers.filter(user => {
+    return users.filter(user => {
       // 1. Role filter
       const matchRole = selectedRoles.length === 0 || selectedRoles.includes(user.role);
 
@@ -138,7 +112,7 @@ export default function UserManagementPage() {
 
       return matchRole && matchGrade && matchSearch;
     });
-  }, [mockUsers, selectedRoles, selectedGrades, searchQuery]);
+  }, [users, selectedRoles, selectedGrades, searchQuery]);
 
   // Pagination calculation
   const totalItems = filteredUsers.length;
@@ -187,7 +161,7 @@ export default function UserManagementPage() {
             </button>
             <div>
               <h1 className="text-lg font-bold leading-tight">Quản lý người dùng</h1>
-              <p className="text-xs text-slate-500">Toán học THPT • Tổng số: {mockUsers.length} thành viên</p>
+              <p className="text-xs text-slate-500">Toán học THPT • Tổng số: {users.length} thành viên</p>
             </div>
           </div>
 
@@ -298,17 +272,24 @@ export default function UserManagementPage() {
         {/* Main Work Area - Solid white background matching the Exam Bank template */}
         <main className="flex-1 overflow-y-auto bg-white p-6 pb-32">
           <div className="flex flex-col gap-6 w-full">
-            <UserTable
-              users={paginatedUsers}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
-              onPageChange={setCurrentPage}
-              onResetPassword={handleResetPassword}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-            />
+            {loading ? (
+              <div className="flex flex-col items-center justify-center py-20 opacity-50">
+                <RefreshCw className="h-10 w-10 text-primary animate-spin mb-4" />
+                <p className="text-sm font-semibold">Đang tải danh sách người dùng...</p>
+              </div>
+            ) : (
+              <UserTable
+                users={paginatedUsers}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                onPageChange={setCurrentPage}
+                onResetPassword={handleResetPassword}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+              />
+            )}
           </div>
         </main>
       </div>

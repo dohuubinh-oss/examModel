@@ -566,21 +566,20 @@ function CreatorContent() {
       {/* Header aligned exactly with exams/create layout */}
       <header className="sticky top-0 z-50 w-full bg-white border-b border-slate-200 px-4 md:px-8 py-3">
         <div className="max-w-[1440px] mx-auto w-full flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" className="p-2 h-10 w-10 shrink-0 text-slate-500 hover:text-slate-800 border border-slate-200" onClick={() => router.push('/question-bank')}>
-              <ChevronLeft size={20} />
-            </Button>
-            <div className="flex items-center gap-2.5">
-              <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center shrink-0 border border-primary/20">
-                <Brain className="text-primary" size={20} />
-              </div>
-              <div className="hidden sm:block">
-                <h1 className="text-lg font-bold text-slate-800 tracking-tight flex items-center gap-2">
-                  {isEditMode ? 'Cập nhật câu hỏi' : 'Thêm câu hỏi mới'}
-                  {isEditMode && <Badge variant="primary" className="bg-amber-500 hover:bg-amber-600 text-white border-0 text-[10px] py-0">ĐANG SỬA</Badge>}
-                </h1>
-                <p className="text-xs text-slate-500 font-medium">{isEditMode ? 'Chỉnh sửa nội dung câu hỏi' : 'Tạo mới hoặc tải lên câu hỏi'}</p>
-              </div>
+          <div className="flex items-center gap-4">
+            <button
+              onClick={() => router.push('/question-bank')}
+              className="bg-primary/10 p-2 rounded-lg text-primary hover:bg-primary/20 transition-colors cursor-pointer flex items-center justify-center"
+              title="Quay lại trang trước"
+            >
+              <Sparkles size={24} />
+            </button>
+            <div>
+              <h1 className="text-lg font-bold leading-tight flex items-center gap-2">
+                {isEditMode ? 'Cập nhật câu hỏi' : 'Thêm câu hỏi mới'}
+                {isEditMode && <Badge variant="primary" className="bg-amber-500 hover:bg-amber-600 text-white border-0 text-[10px] py-0">ĐANG SỬA</Badge>}
+              </h1>
+              <p className="text-xs text-slate-500">{isEditMode ? 'Chỉnh sửa nội dung câu hỏi' : 'Tạo mới hoặc tải lên câu hỏi'}</p>
             </div>
           </div>
 

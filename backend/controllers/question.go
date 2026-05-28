@@ -362,6 +362,11 @@ func (qc *QuestionController) DeleteQuestion(c *gin.Context) {
 		return
 	}
 
+	if question.UsedCount > 0 {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Không thể xoá câu hỏi này vì nó đã được sử dụng trong đề thi. Vui lòng chuyển trạng thái sang 'Lưu trữ' (Archived) thay vì xóa."})
+		return
+	}
+
 	if err := qc.DB.Delete(&question).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to delete question: " + err.Error()})
 		return
@@ -400,13 +405,20 @@ func (qc *QuestionController) DeleteQuestionGroup(c *gin.Context) {
 	}
 
 	var group models.QuestionGroup
-	if err := qc.DB.First(&group, uint(id)).Error; err != nil {
+	if err := qc.DB.Preload("Questions").First(&group, uint(id)).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			c.JSON(http.StatusNotFound, gin.H{"error": "Question group not found"})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to find question group: " + err.Error()})
 		}
 		return
+	}
+
+	for _, q := range group.Questions {
+		if q.UsedCount > 0 {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Không thể xoá nhóm câu hỏi này vì có ít nhất một câu hỏi bên trong đã được sử dụng trong đề thi. Vui lòng chuyển trạng thái sang 'Lưu trữ' (Archived)."})
+			return
+		}
 	}
 
 	if err := qc.DB.Select("Questions").Delete(&group).Error; err != nil {

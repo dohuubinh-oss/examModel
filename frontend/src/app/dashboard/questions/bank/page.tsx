@@ -34,89 +34,29 @@ export default function ExamBankPage() {
   const [currentPage, setCurrentPage] = React.useState<number>(1);
   const itemsPerPage = 5;
 
-  // Mock data of exams for realistic dynamic filtering and search
-  const mockExams: ExamItem[] = React.useMemo(() => [
-    {
-      id: "exam1",
-      name: "Kiểm tra Giữa kỳ I - Đại số (Luyện thi 10)",
-      updatedText: "Cập nhật 2 giờ trước",
-      grade: "10",
-      questionsCount: 50,
-      duration: "90 phút",
-      status: "published",
-      iconType: "calculate"
-    },
-    {
-      id: "exam2",
-      name: "Kiểm tra 1 Tiết - Hình học 9",
-      updatedText: "Cập nhật Hôm qua",
-      grade: "9",
-      questionsCount: 35,
-      duration: "45 phút",
-      status: "draft",
-      iconType: "square_foot"
-    },
-    {
-      id: "exam3",
-      name: "Kiểm tra 15p - Số học 6",
-      updatedText: "Cập nhật 3 ngày trước",
-      grade: "6",
-      questionsCount: 20,
-      duration: "15 phút",
-      status: "ended",
-      iconType: "timeline"
-    },
-    {
-      id: "exam4",
-      name: "Khảo sát năng lực - Luyện thi 10",
-      updatedText: "Cập nhật 1 tuần trước",
-      grade: "10",
-      questionsCount: 40,
-      duration: "60 phút",
-      status: "published",
-      iconType: "query_stats"
-    },
-    {
-      id: "exam5",
-      name: "Đề thi thử Cuối Kì - Lớp 10",
-      updatedText: "Cập nhật 4 ngày trước",
-      grade: "10",
-      questionsCount: 50,
-      duration: "90 phút",
-      status: "published",
-      iconType: "calculate"
-    },
-    {
-      id: "exam6",
-      name: "Kiểm tra 1 Tiết - Giải tích 12",
-      updatedText: "Cập nhật 5 ngày trước",
-      grade: "8",
-      questionsCount: 30,
-      duration: "45 phút",
-      status: "draft",
-      iconType: "timeline"
-    },
-    {
-      id: "exam7",
-      name: "Kiểm tra Cuối Kì - Hình học 8",
-      updatedText: "Cập nhật 2 tuần trước",
-      grade: "8",
-      questionsCount: 40,
-      duration: "90 phút",
-      status: "ended",
-      iconType: "square_foot"
-    },
-    {
-      id: "exam8",
-      name: "Luyện tập 15 Phút - Số học 5",
-      updatedText: "Cập nhật 3 tuần trước",
-      grade: "5",
-      questionsCount: 25,
-      duration: "15 phút",
-      status: "published",
-      iconType: "query_stats"
-    }
-  ], []);
+  // Replace mock data with state and fetch logic
+  const [exams, setExams] = React.useState<ExamItem[]>([]);
+  const [isLoading, setIsLoading] = React.useState<boolean>(true);
+
+  React.useEffect(() => {
+    const fetchExams = async () => {
+      setIsLoading(true);
+      try {
+        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/exams`);
+        if (res.ok) {
+          const data = await res.json();
+          setExams(data);
+        } else {
+          console.error("Failed to fetch exams");
+        }
+      } catch (err) {
+        console.error("Error fetching exams:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchExams();
+  }, []);
 
   // Handlers for dynamic filters
   const toggleGrade = (grade: string) => {
@@ -126,9 +66,9 @@ export default function ExamBankPage() {
     setCurrentPage(1);
   };
 
-  const toggleSubject = (subj: string) => {
+  const toggleDuration = (dur: string) => {
     setSelectedSubjects(prev => 
-      prev.includes(subj) ? prev.filter(s => s !== subj) : [...prev, subj]
+      prev.includes(dur) ? prev.filter(d => d !== dur) : [...prev, dur]
     );
     setCurrentPage(1);
   };
@@ -149,17 +89,14 @@ export default function ExamBankPage() {
 
   // Real-time client-side filter computation
   const filteredExams = React.useMemo(() => {
-    return mockExams.filter(exam => {
+    return exams.filter(exam => {
       // 1. Grade filter match
       const matchGrade = selectedGrades.length === 0 || selectedGrades.includes(exam.grade);
 
-      // 2. Exam Type (Subject checkbox) match
-      const matchSubject = selectedSubjects.length === 0 || selectedSubjects.some(subj => {
-        if (subj === '15 Phút' && (exam.name.includes('15p') || exam.name.includes('15 Phút') || exam.duration.includes('15'))) return true;
-        if (subj === '1 Tiết' && (exam.name.includes('1 Tiết') || exam.name.includes('45p') || exam.duration.includes('45') || exam.duration.includes('30'))) return true;
-        if (subj === 'Giữa Kì' && (exam.name.includes('Giữa kỳ') || exam.name.includes('Giữa Kì'))) return true;
-        if (subj === 'Cuối Kì' && (exam.name.includes('Học kỳ') || exam.name.includes('Cuối Kì') || exam.name.includes('thi thử') || exam.name.includes('Tốt nghiệp'))) return true;
-        return false;
+      // 2. Duration match (mapped to selectedSubjects array for convenience)
+      const matchDuration = selectedSubjects.length === 0 || selectedSubjects.some(dur => {
+        // Exam duration might be "90 phút". We just check if it starts with the duration number
+        return exam.duration.startsWith(dur);
       });
 
       // 3. Level filter match
@@ -170,9 +107,9 @@ export default function ExamBankPage() {
         return false;
       });
 
-      return matchGrade && matchSubject && matchLevel;
+      return matchGrade && matchDuration && matchLevel;
     });
-  }, [mockExams, selectedGrades, selectedSubjects, selectedLevels]);
+  }, [exams, selectedGrades, selectedSubjects, selectedLevels]);
 
   // Pagination calculation
   const totalItems = filteredExams.length;
@@ -190,24 +127,30 @@ export default function ExamBankPage() {
   }, [totalPages, currentPage]);
 
   // Table actions
-  const handleShare = (exam: ExamItem) => {
-    alert(`[Chia sẻ] Đề thi: "${exam.name}" (ID: ${exam.id})`);
-  };
-
-  const handleCopy = (exam: ExamItem) => {
-    alert(`[Nhân bản] Đề thi: "${exam.name}" (ID: ${exam.id})`);
-  };
-
   const handleEdit = (exam: ExamItem) => {
     alert(`[Chỉnh sửa] Đề thi: "${exam.name}" (ID: ${exam.id})`);
   };
 
-  const handleDelete = (exam: ExamItem) => {
-    alert(`[Xóa] Đề thi: "${exam.name}" (ID: ${exam.id})`);
+  const handleDelete = async (exam: ExamItem) => {
+    if (!confirm(`Bạn có chắc chắn muốn xoá đề thi "${exam.name}" không?`)) return;
+    
+    try {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/exams/${exam.id}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        setExams(prev => prev.filter(e => e.id !== exam.id));
+      } else {
+        alert('Xóa đề thi thất bại!');
+      }
+    } catch (error) {
+      console.error(error);
+      alert('Có lỗi xảy ra khi xóa đề thi!');
+    }
   };
 
   const handleTake = (exam: ExamItem) => {
-    router.push('/dashboard/exams/take');
+    router.push(`/dashboard/exams/take?id=${exam.id}`);
   };
 
   return (
@@ -225,15 +168,15 @@ export default function ExamBankPage() {
             </button>
             <div>
               <h1 className="text-lg font-bold leading-tight">Quản lý ngân hàng đề thi</h1>
-              <p className="text-xs text-slate-500">Toán học THPT • Tổng số: {mockExams.length} đề thi</p>
+              <p className="text-xs text-slate-500">Toán học THPT • Tổng số: {exams.length} đề thi</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <Button variant="outline-slate">
+            <Button variant="outline-slate" onClick={() => router.push('/question-bank/import')}>
               <Upload size={20} />
               Nhập từ JSON
             </Button>
-            <Button variant="default" className="shadow-md shadow-primary/20" onClick={() => router.push('/dashboard/exams/create')}>
+            <Button variant="default" className="shadow-md shadow-primary/20" onClick={() => router.push('/question-bank')}>
               <Plus size={20} />
               Tạo đề thi
             </Button>
@@ -286,17 +229,17 @@ export default function ExamBankPage() {
               </div>
             </Collapsible>
 
-            {/* Chuyên đề filter (Exam Types) */}
-            <Collapsible title="Chuyên đề" icon={<BookOpen className="h-4 w-4 text-slate-400" />} open>
+            {/* Thời gian filter */}
+            <Collapsible title="Thời gian" icon={<BookOpen className="h-4 w-4 text-slate-400" />} open>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2.5 pt-2">
-                {['15 Phút', '1 Tiết', 'Giữa Kì', 'Cuối Kì'].map(s => (
+                {['15', '45', '60', '90', '120'].map(s => (
                   <label key={s} className="flex items-center gap-2 text-xs text-slate-600 cursor-pointer select-none">
                     <Checkbox
                       checkboxSize="sm"
                       checked={selectedSubjects.includes(s)}
-                      onChange={() => toggleSubject(s)}
+                      onChange={() => toggleDuration(s)}
                     />
-                    {s}
+                    {s} phút
                   </label>
                 ))}
               </div>
@@ -332,20 +275,25 @@ export default function ExamBankPage() {
         {/* Main Work Area - Contains ONLY the blue themed Exam Bank Table */}
         <main className="flex-1 overflow-y-auto bg-white p-6 pb-32">
           <div className="flex flex-col gap-6 w-full">
-            <ExamTable
-              exams={paginatedExams}
-              currentPage={currentPage}
-              totalPages={totalPages}
-              totalItems={totalItems}
-              itemsPerPage={itemsPerPage}
-              theme="blue"
-              onPageChange={setCurrentPage}
-              onShare={handleShare}
-              onCopy={handleCopy}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onTake={handleTake}
-            />
+            {isLoading ? (
+              <div className="flex items-center justify-center py-20 text-slate-500">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mr-3"></div>
+                Đang tải dữ liệu...
+              </div>
+            ) : (
+              <ExamTable
+                exams={paginatedExams}
+                currentPage={currentPage}
+                totalPages={totalPages}
+                totalItems={totalItems}
+                itemsPerPage={itemsPerPage}
+                theme="blue"
+                onPageChange={setCurrentPage}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onTake={handleTake}
+              />
+            )}
           </div>
         </main>
       </div>

@@ -218,7 +218,34 @@ func TestQuestionAPI(t *testing.T) {
 		}
 	})
 
-	// 4. Delete group question (Verifies soft delete cascade)
+	// 4. Delete questions and groups with UsedCount > 0
+	t.Run("DELETE /api/v1/questions/:id - Prevent Deletion if UsedCount > 0", func(t *testing.T) {
+		// Set UsedCount to 1 for the first question
+		testDB.Model(&firstQuestion).Update("used_count", 1)
+
+		req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/questions/%d", firstQuestion.ID), nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusBadRequest {
+			t.Fatalf("expected status 400 Bad Request, got %d. Body: %s", w.Code, w.Body.String())
+		}
+	})
+
+	t.Run("DELETE /api/v1/question-groups/:id - Prevent Deletion if child UsedCount > 0", func(t *testing.T) {
+		req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/question-groups/%d", group.ID), nil)
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, req)
+
+		if w.Code != http.StatusBadRequest {
+			t.Fatalf("expected status 400 Bad Request, got %d. Body: %s", w.Code, w.Body.String())
+		}
+
+		// Reset UsedCount to 0 for subsequent tests
+		testDB.Model(&firstQuestion).Update("used_count", 0)
+	})
+
+	// 5. Delete group question (Verifies soft delete cascade)
 	t.Run("DELETE /api/v1/question-groups/:id - Cascade Soft Delete", func(t *testing.T) {
 		req, _ := http.NewRequest("DELETE", fmt.Sprintf("/api/v1/question-groups/%d", group.ID), nil)
 		w := httptest.NewRecorder()

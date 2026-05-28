@@ -8,10 +8,10 @@ import { Sigma, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { PasswordInput } from '@/components/ui/PasswordInput';
+import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
 
 export default function LoginPage() {
   const router = useRouter();
-  const [fullname, setFullname] = React.useState('');
   const [identity, setIdentity] = React.useState('');
   const [password, setPassword] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
@@ -21,10 +21,6 @@ export default function LoginPage() {
     e.preventDefault();
     
     // Simple front-end validation
-    if (!fullname.trim()) {
-      setErrorMsg('Vui lòng nhập họ và tên của bạn');
-      return;
-    }
     if (!identity.trim()) {
       setErrorMsg('Vui lòng nhập số điện thoại hoặc email');
       return;
@@ -37,19 +33,60 @@ export default function LoginPage() {
     setErrorMsg('');
     setIsLoading(true);
 
-    // Mock API Submission (ready for Go-Gin endpoint connection)
+    // API Submission
     try {
-      // Simulate Go-Gin API response delay
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiUrl}/api/v1/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          identity: identity.trim(),
+          password: password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Đăng nhập thất bại');
+      }
       
-      // Store mock user state or token if necessary
-      localStorage.setItem('user_name', fullname);
-      localStorage.setItem('user_identity', identity);
+      // Store user token and info
+      localStorage.setItem('auth_token', data.data.token);
+      localStorage.setItem('user_name', data.data.user.full_name || 'User');
+      localStorage.setItem('user_identity', data.data.user.username);
+      localStorage.setItem('user_role', data.data.user.role);
 
       // Redirect to the generalized User dashboard
       router.push('/dashboard/users');
-    } catch (err) {
-      setErrorMsg('Đăng nhập thất bại. Vui lòng thử lại!');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Đăng nhập thất bại. Vui lòng thử lại!');
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSuccess = async (credentialResponse: any) => {
+    setIsLoading(true);
+    setErrorMsg('');
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+      const response = await fetch(`${apiUrl}/api/v1/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: credentialResponse.credential }),
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Đăng nhập Google thất bại');
+      
+      localStorage.setItem('auth_token', data.data.token);
+      localStorage.setItem('user_name', data.data.user.full_name);
+      localStorage.setItem('user_identity', data.data.user.username);
+      localStorage.setItem('user_role', data.data.user.role);
+      router.push('/dashboard/users');
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Đăng nhập Google thất bại. Vui lòng thử lại!');
       setIsLoading(false);
     }
   };
@@ -121,26 +158,15 @@ export default function LoginPage() {
           </div>
 
           {/* Form */}
-          <form className="space-y-[1rem]" onSubmit={handleSubmit}>
+          <GoogleOAuthProvider clientId={process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID'}>
+            <form className="space-y-[1rem]" onSubmit={handleSubmit}>
             {errorMsg && (
               <div className="bg-rose-50 text-rose-600 text-xs font-semibold px-4 py-3 rounded-lg border border-rose-100 transition-all">
                 {errorMsg}
               </div>
             )}
 
-            <div>
-              <label className="block text-[0.875rem] font-semibold text-slate-700 mb-[0.5rem]" htmlFor="fullname">Họ và Tên</label>
-              <Input 
-                variant="login" 
-                id="fullname" 
-                placeholder="Nhập họ và tên của bạn" 
-                type="text"
-                value={fullname}
-                onChange={(e) => setFullname(e.target.value)}
-                disabled={isLoading}
-                autoComplete="name"
-              />
-            </div>
+
 
             <div>
               <label className="block text-[0.875rem] font-semibold text-slate-700 mb-[0.5rem]" htmlFor="identity">Số điện thoại hoặc Email</label>
@@ -200,27 +226,17 @@ export default function LoginPage() {
           </div>
 
           {/* Social Logins */}
-          <div className="grid gap-[1rem]">
-            <button 
-              type="button"
-              disabled={isLoading}
-              onClick={() => {
-                setFullname('Đăng nhập Google');
-                setIdentity('google_sso@example.com');
-                setPassword('google_sso_verified');
-                alert('Khởi chạy cổng Đăng nhập SSO qua Google của MathGenius!');
-              }}
-              className="flex items-center justify-center gap-[0.75rem] px-[1rem] py-[0.875rem] border border-slate-200 rounded-lg bg-white hover:bg-slate-50 disabled:opacity-50 transition-all duration-300 group cursor-pointer"
-            >
-              <svg className="w-[1.25rem] h-[1.25rem] group-hover:scale-110 transition-transform duration-300 shrink-0" viewBox="0 0 24 24">
-                <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"></path>
-                <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"></path>
-                <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l3.66-2.84z" fill="#FBBC05"></path>
-                <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"></path>
-              </svg>
-              <span className="text-[0.875rem] font-semibold text-slate-700">Google</span>
-            </button>
+          <div className="flex justify-center w-full">
+            <GoogleLogin
+              onSuccess={handleGoogleSuccess}
+              onError={() => setErrorMsg('Đăng nhập Google thất bại')}
+              text="signin_with"
+              shape="rectangular"
+              theme="outline"
+              size="large"
+            />
           </div>
+          </GoogleOAuthProvider>
 
           {/* Footer */}
           <p className="text-center mt-[1.5rem] text-slate-500 text-[0.875rem]">

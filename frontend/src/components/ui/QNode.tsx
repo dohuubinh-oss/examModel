@@ -6,10 +6,11 @@ export type QNodeStatus = 'done' | 'current' | 'flagged' | 'unfinished';
 export interface QNodeProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   number: number;
   status: QNodeStatus;
+  isCurrent?: boolean;
 }
 
 export const QNode = React.forwardRef<HTMLButtonElement, QNodeProps>(
-  ({ className, number, status, ...props }, ref) => {
+  ({ className, number, status, isCurrent, ...props }, ref) => {
     const baseStyles = "relative w-full aspect-square flex items-center justify-center rounded-lg font-bold text-sm cursor-pointer transition-all hover:scale-110 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-primary/50";
     
     const variants = {
@@ -22,7 +23,7 @@ export const QNode = React.forwardRef<HTMLButtonElement, QNodeProps>(
     return (
       <button
         ref={ref}
-        className={cn(baseStyles, variants[status], className)}
+        className={cn(baseStyles, variants[status], isCurrent && status !== 'current' ? 'ring-4 ring-primary/20 shadow-md' : '', className)}
         {...props}
       >
         {number}
