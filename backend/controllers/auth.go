@@ -147,7 +147,7 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(user.ID, user.Role)
+	accessToken, refreshToken, err := utils.GenerateTokens(user.ID, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, APIResponse{
 			Status:  "error",
@@ -156,17 +156,60 @@ func (ac *AuthController) Login(c *gin.Context) {
 		return
 	}
 
+	// Set HttpOnly cookie cho Refresh Token (7 days)
+	c.SetCookie("refresh_token", refreshToken, 7*24*3600, "/", "", false, true)
+
 	c.JSON(http.StatusOK, APIResponse{
 		Status:  "success",
 		Message: "Đăng nhập thành công",
 		Data: gin.H{
-			"token": token,
+			"token": accessToken,
 			"user": gin.H{
 				"id":        user.ID,
 				"username":  user.Username,
 				"full_name": user.FullName,
 				"role":      user.Role,
 			},
+		},
+	})
+}
+
+// RefreshToken handles refreshing the access token
+func (ac *AuthController) RefreshToken(c *gin.Context) {
+	refreshToken, err := c.Cookie("refresh_token")
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, APIResponse{
+			Status:  "error",
+			Message: "Không tìm thấy refresh token",
+		})
+		return
+	}
+
+	claims, err := utils.ValidateRefreshToken(refreshToken)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, APIResponse{
+			Status:  "error",
+			Message: "Refresh token không hợp lệ hoặc đã hết hạn",
+		})
+		return
+	}
+
+	newAccessToken, newRefreshToken, err := utils.GenerateTokens(claims.UserID, claims.Role)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, APIResponse{
+			Status:  "error",
+			Message: "Lỗi sinh token mới",
+		})
+		return
+	}
+
+	c.SetCookie("refresh_token", newRefreshToken, 7*24*3600, "/", "", false, true)
+
+	c.JSON(http.StatusOK, APIResponse{
+		Status:  "success",
+		Message: "Làm mới token thành công",
+		Data: gin.H{
+			"token": newAccessToken,
 		},
 	})
 }

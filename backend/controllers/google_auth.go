@@ -99,7 +99,7 @@ func (ctrl *AuthController) GoogleLogin(c *gin.Context) {
 	db.Save(&user)
 
 	// Generate JWT for our system
-	token, err := utils.GenerateToken(user.ID, user.Role)
+	accessToken, refreshToken, err := utils.GenerateTokens(user.ID, user.Role)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, APIResponse{
 			Status:  "error",
@@ -108,11 +108,13 @@ func (ctrl *AuthController) GoogleLogin(c *gin.Context) {
 		return
 	}
 
+	c.SetCookie("refresh_token", refreshToken, 7*24*3600, "/", "", false, true)
+
 	c.JSON(http.StatusOK, APIResponse{
 		Status:  "success",
 		Message: "Đăng nhập Google thành công",
 		Data: map[string]interface{}{
-			"token": token,
+			"token": accessToken,
 			"user":  user,
 		},
 	})

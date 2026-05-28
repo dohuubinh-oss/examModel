@@ -131,6 +131,7 @@ func main() {
 		authGroup.POST("/register", authCtrl.Register)
 		authGroup.POST("/login", authCtrl.Login)
 		authGroup.POST("/google", authCtrl.GoogleLogin)
+		authGroup.POST("/refresh", authCtrl.RefreshToken)
 
 		// Upload endpoints
 		uploadCtrl := controllers.NewUploadController()
